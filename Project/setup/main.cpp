@@ -8,6 +8,8 @@
 #include<fstream>
 #include <random>
 #include <ctime>
+#include"SettingProject.h"
+
 #define SCREEN_WIDTH 900
 #define SCREEN_HEIGHT 600
 
@@ -17,41 +19,6 @@ SDL_Window* gWindow = NULL; // cửa sổ game
 SDL_Renderer* gRenderer = NULL; // màn hình xử lý
 Uint32 gOldTime; // tho
 float deltaTime = 0; // chênh lệch 2 frame
-
-
-// struct tọa độ 1 điểm
-class Vector2D
-{
-public:
-	float x;
-	float y;
-
-	Vector2D()
-	{
-		x = 0.0f;
-		y = 0.0f;
-	}
-
-	Vector2D(float a, float b)
-	{
-		x = a;
-		y = b;
-	}
-	Vector2D operator+(Vector2D other) {
-		return Vector2D(x + other.x, y + other.y);
-	}
-	Vector2D operator-(Vector2D other) {
-		return Vector2D(x - other.x, y - other.y);
-	}
-	Vector2D operator*(float t) {
-		return Vector2D(x*t, y*t);
-	}
-	Vector2D& operator+=(const Vector2D& other) {
-		x += other.x;
-		y += other.y;
-		return *this;
-	}
-};
 
 // khởi tạo sdl
 bool InitSDL()
@@ -136,28 +103,25 @@ SDL_Texture* LoadTextureFromFile(string path)
 	}
 	return pTexture;
 }
+
 // class lưu trữ khi load ảnh lên
 class Texture2D
 {
 public:
-	// size
-	float mWidth;
-	float mHeight;
-
 	SDL_Renderer* mRenderer; // màn hình hienr thị
-	Vector2D mPosition; // vị trí
+	Transform transform;
 	SDL_Texture* mTexture; // biến lưu thông tin
+	bool isActive;
 	Texture2D() {
 		mRenderer = NULL;
 		mTexture = NULL;
-		mWidth = 0;
-		mHeight = 0;
 	}
-	Texture2D(SDL_Renderer* renderer) { // khởi tạo
+	Texture2D(SDL_Renderer* renderer, string path) { // khởi tạo
 		mRenderer = renderer;
-		mTexture = NULL;
-		mWidth = 0;
-		mHeight = 0;
+		if (!LoadFromFile(path)) {
+			cout << "Loi hinh anh " << path << endl;
+		}
+		isActive = true;
 	}
 	void Free() { // xóa bộ nhớ
 		if (mTexture != NULL)
@@ -165,12 +129,9 @@ public:
 			SDL_DestroyTexture(mTexture);
 			mTexture = NULL;
 		}
-		mWidth = 0;
-		mHeight = 0;
 	}
 	~Texture2D() { // giải phóng bộ nhớ
 		Free();
-
 		mRenderer = NULL;
 	}
 	bool LoadFromFile(string path) { // load ảnh
@@ -181,8 +142,9 @@ public:
 		{
 			SDL_SetColorKey(pSurface, SDL_TRUE, SDL_MapRGB(pSurface->format, 0, 0xFF, 0xFF)); // xóa nền
 
-			mWidth = pSurface->w; // giảm kích thước ban đầu
-			mHeight = pSurface->h;
+			transform.size.x = pSurface->w; 
+			transform.size.y = pSurface->h;
+			transform.scale = Vector2D(1, 1);
 
 			mTexture = SDL_CreateTextureFromSurface(mRenderer, pSurface); 
 			if (mTexture == NULL)
@@ -197,40 +159,66 @@ public:
 		}
 		return mTexture != NULL;
 	}
+	void SetScale(Vector2D s) {
+		transform.size.x *= s.x/transform.scale.x;
+		transform.size.y *= s.y / transform.scale.y;
+		transform.scale = s;
+	}
 	// hiển thị đối tượng: vị trí, cách lấy đối xứng, góc xoay, phạm vi lấy, khung hiển thị
-	void Render(Vector2D p = { -1, -1 }, SDL_RendererFlip flip = SDL_FLIP_NONE, double angle = 0.0f, SDL_Rect* srcRect = nullptr, SDL_Rect* renderLocation = nullptr) { // load ảnh lên màn hình xử lý
+	virtual void Start() {
+
+	}
+	virtual void Update(SDL_Event e, float deltaTime) {
+		if (!isActive) return;
+		this->Render();
+	}
+	void Render() { // load ảnh lên màn hình xử lý
 		SDL_SetRenderDrawColor(mRenderer, 0x00, 0x00, 0x00, 0x00);
 		// vẽ đối tượng lên màn hình xử lý, với khung vừa có, góc xoay angle, và cách lấy đối xứng flip
-		if (p.x == -1)
-			p = mPosition;
-		if (renderLocation == nullptr){
-			SDL_Rect r = { p.x, p.y, mWidth, mHeight };
-			SDL_RenderCopyEx(mRenderer, mTexture, srcRect, &r, angle, NULL, flip);
-		}
-		else {
-			SDL_RenderCopyEx(mRenderer, mTexture, srcRect, renderLocation, angle, NULL, flip);
-		}
+		SDL_Rect r = {transform.position.x, transform.position.y, transform.size.x, transform.size.y };
+		SDL_RendererFlip flip = transform.scale.x == -1 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+		float angle = transform.rotation.x;
+		SDL_RenderCopyEx(mRenderer, mTexture, NULL, &r, angle, NULL, flip);
 	}
 };
-static class Math {
+
+class Mouse :public Texture2D {
 public:
-	static float Clamp(float value, float min, float max) {
-		if (value < min)
-			return min;
-		if (value > max)
-			return max;
-		return value;
+	Mouse(SDL_Renderer* renderer, string path):Texture2D(renderer, path){}
+	void Start() override {
+		Texture2D::Start();
+	}
+	void Update(SDL_Event e, float deltaTime) override {
+		Texture2D::Update(e, deltaTime);
+		transform.SetPosition(Vector2D(Mathf::Clamp(e.button.x, 0, SCREEN_WIDTH), Mathf::Clamp(e.button.y, 0, SCREEN_HEIGHT)));
 	}
 };
+
 
 int main(int argc, char* args[])
 {
 	if (InitSDL())
 	{
+		SDL_ShowCursor(SDL_DISABLE);
 		srand(time(0)); // cập nhật thời gian hiện tại để làm mới random
-		Mix_Chunk* sound = Mix_LoadWAV("./Sounds/BackGround.wav"); /// phát nhạc
-		Mix_PlayChannel(-1, sound, 0);
-		cout << "Setup";
+		/*Mix_Chunk* sound = Mix_LoadWAV("./Sounds/BackGround.wav"); /// phát nhạc
+		Mix_PlayChannel(-1, sound, 0);*/
+		Mouse mouse(gRenderer, SettingProject::getPath(TYPE_IMG::MOUSE));
+		mouse.SetScale(Vector2D(0.7f, 0.7f));
+		SDL_Event e;
+		float deltatime = 0;
+		while (true) {
+			SDL_PollEvent(&e); // sự kiện 
+			gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
+			SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0x00);
+			SDL_RenderClear(gRenderer); // xóa dữ liệu cũ
+			
+			mouse.Update(e, deltatime);
+
+
+			SDL_RenderPresent(gRenderer); // hiển thị ra màn hình
+			deltatime = (float)(SDL_GetTicks() - gOldTime) / 1000.0f; // tính độ chênh giữa 2
+		}
 	}
 	CloseSDL();
 	return 0;

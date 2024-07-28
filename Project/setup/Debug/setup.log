@@ -1,1 +1,16 @@
-﻿  setup.vcxproj -> C:\Learn\GameProject_LTNC\Project\Debug\setup.exe
+﻿  main.cpp
+C:\Learn\GameProject_LTNC\Project\setup\SettingProject.h(69,2): warning C4091: 'static ': ignored on left of 'Mathf' when no variable is declared
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(145,31): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(146,31): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(178,35): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(178,35): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(178,57): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(178,57): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(178,75): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(178,75): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(178,93): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(178,93): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(193,55): warning C4244: 'argument': conversion from 'Sint32' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(193,98): warning C4244: 'argument': conversion from 'Sint32' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(203,13): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  setup.vcxproj -> C:\Learn\GameProject_LTNC\Project\Debug\setup.exe
