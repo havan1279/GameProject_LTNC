@@ -45,13 +45,6 @@ public:
 	Vector2D size;
 	Vector2D scale;
 	Transform() {};
-	void SetPosition(Vector2D p) {
-		position.x = p.x - size.x / 2;
-		position.y = p.y - size.y / 2;
-	}
-	Vector2D GetPosition() {
-		return Vector2D(position.x + size.x / 2, position.y + size.y / 2);
-	}
 };
 static class Mathf {
 public:
@@ -69,14 +62,36 @@ public:
 };
 enum TYPE_IMG
 {
-	MOUSE
+	BG,
+	MOUSE,
+	ICON
+};
+enum TYPE_ICON {
+	REPEAT,
+	HOME,
+	START,
+	AUDIO_ON,
+	AUDIO_OFF,
+	SETTING,
+	CHOOSE,
+	MENU
 };
 namespace SettingProject {
 	static std::string pathImg = "./Images\\";
-	static std::string fileExtension = ".png";
-	static std::string fileNames[1] = { "iconMouse" };
-
-	static std::string getPath(TYPE_IMG type) {
-		return pathImg + fileNames[(int)type] + fileExtension;
+	static std::string fileExtensions[2] = { ".png", ".jpg" };
+	static std::string fileNames[10] = { "BG", "iconMouse" };
+	static std::string getPath(TYPE_IMG type, int i = 0) {
+		switch (type) {
+		case BG: {
+			return pathImg + fileNames[(int)type] + to_string(rand()%(4) + 1) + fileExtensions[1];
+		}
+		case MOUSE: {
+			return pathImg + fileNames[(int)type] + fileExtensions[0];
+		}
+		case ICON: {
+			return pathImg + to_string(i + 1) + fileExtensions[0];
+		}
+		}
+		
 	}
 }
