@@ -21,6 +21,7 @@ vector <Mix_Chunk*> sounds;
 vector<int> soundIds;
 Uint32 gOldTime; // tho
 float deltaTime = 0; // chênh lệch 2 frame
+float sizeBlock = 45;
 // khởi tạo sdl
 bool InitSDL();
 // đóng sdl
@@ -39,10 +40,6 @@ public:
 	Transform transform;
 	SDL_Texture* mTexture; // biến lưu thông tin
 	bool isActive;
-	Texture2D() {
-		mRenderer = NULL;
-		mTexture = NULL;
-	}
 	Texture2D(SDL_Renderer* renderer, string path) { // khởi tạo
 		mRenderer = renderer;
 		if (!LoadFromFile(path)) {
@@ -173,8 +170,93 @@ public:
 	}
 };
 
+class Block : public Texture2D {
+public:
+	int _type;
+	int _lvBlock;
+
+	Block(SDL_Renderer* renderer, int type, int lvBlock = 0) : Texture2D(renderer, SettingProject::getPath(BLOCK, SettingProject::indexSkin + 1, type + 1)) {
+		_type = type;
+		_lvBlock = lvBlock;
+		SetScale(Vector2D(sizeBlock / transform.size.x, sizeBlock / transform.size.y));
+	}
+	void Start() override {
+
+	}
+	void Update(SDL_Event e, float deltaTime) override {
+		Texture2D::Update(e, deltaTime);
+	}
+};
+class Blocks {
+public:
+	BLOCK_TYPE _typeBlock;
+	Vector2D _position;
+	int _face;
+	vector<Block*> _listBlock;
+
+	Blocks(SDL_Renderer* renderer, BLOCK_TYPE _type, Vector2D _p, Vector2D _s) {
+		_typeBlock = _type;
+		_position = _p;
+		_face = rand() % 4;
+
+		Block* b1 = new Block(gRenderer, (int)BLOCK_I);
+		Block* b2 = new Block(gRenderer, (int)BLOCK_I);
+		Block* b3 = new Block(gRenderer, (int)BLOCK_I);
+		Block* b4 = new Block(gRenderer, (int)BLOCK_I);
+		_listBlock.push_back(b1);
+		_listBlock.push_back(b2);
+		_listBlock.push_back(b3);
+		_listBlock.push_back(b4);
+		UpdateIndex();
+	}
+	void Flip(int** matrix) {
+		if (checkCanFlip(matrix)) {
+			_face = (_face + 1) % 4;
+			UpdateIndex();
+		}
+	}
+	bool checkCanFlip(int** matrix) {
+		return true;
+	}
+	void UpdateIndex() {
+		switch (_typeBlock) {
+			case BLOCK_I: {
+				if (_face == 0) {
+					_listBlock[0]->transform.position = _position + Vector2D(-1, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + Vector2D(2, 0) * (sizeBlock - 9);
+				}
+				else if (_face == 1) {
+					_listBlock[0]->transform.position = _position + Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + Vector2D(0, 2) * (sizeBlock - 9);
+				}
+				else if (_face == 2) {
+					_listBlock[0]->transform.position = _position + Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + Vector2D(-1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + Vector2D(-2, 0) * (sizeBlock - 9);
+				}
+				else if (_face == 3) {
+					_listBlock[0]->transform.position = _position + Vector2D(0, -2) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + Vector2D(0, 1) * (sizeBlock - 9);
+				}
+				break;
+			}
+		}
+	}
+	void Update(SDL_Event e, float deltaTime) {
+		for (int i = 0; i < _listBlock.size(); i++)
+			_listBlock[i]->Update(e, deltaTime);
+	}
+};
 void Menu();
 void SettingMenu();
+void PlayGame();
 vector<Texture2D*> GetListType(int type, int n = 7);
 
 int main(int argc, char* args[])
@@ -185,8 +267,9 @@ int main(int argc, char* args[])
 		srand(time(0)); // cập nhật thời gian hiện tại để làm mới random
 		InitSoundEffect();
 		soundIds.push_back(Mix_PlayChannel(-1, sounds[0], -1));
-		Menu();
+		//Menu();
 		//SettingMenu();
+		PlayGame();
 	}
 	CloseSDL();
 	return 0;
@@ -273,6 +356,23 @@ SDL_Texture* LoadTextureFromFile(string path)
 	}
 	return pTexture;
 }
+void InitSoundEffect() {
+	sounds.push_back(Mix_LoadWAV("./Sounds/BG.wav")); /// phát nhạc
+	sounds.push_back(Mix_LoadWAV("./Sounds/Mouse.wav")); /// phát nhạc
+}
+void DisAudio() {
+	Mix_Pause(soundIds[0]);
+	for (int i = 1; i < soundIds.size(); i++)
+		Mix_HaltChannel(soundIds[i]);
+}
+void PlayAudio(ID_AUDIO type) {
+	if (SettingProject::isPlayAudio == -1) return;
+	if (type == 0) {
+		Mix_Resume(soundIds[0]);
+	}
+	else
+		soundIds.push_back(Mix_PlayChannel(-1, sounds[(int)type], type == 0 ? -1 : 0));
+}
 void Menu() {
 	Texture2D BG(gRenderer, SettingProject::getPath(TYPE_IMG::BG));
 	BG.SetScale(Vector2D(SCREEN_WIDTH / BG.transform.size.x, SCREEN_HEIGHT / BG.transform.size.y));
@@ -281,7 +381,6 @@ void Menu() {
 	Texture2D BG2(gRenderer, SettingProject::getPath(TYPE_IMG::BG2));
 	BG2.SetScale(Vector2D(SCREEN_WIDTH / BG.transform.size.x + 1, SCREEN_HEIGHT / BG.transform.size.y + 1));
 	BG2.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 150);
-	//cout << SCREEN_WIDTH  << " " << BG->transform.size.x << " " << SCREEN_HEIGHT  << " " << BG->transform.size.y;
 
 	Mouse mouse(gRenderer, SettingProject::getPath(TYPE_IMG::MOUSE));
 	mouse.SetScale(Vector2D(0.7f, 0.7f));
@@ -300,7 +399,6 @@ void Menu() {
 	btnSetting.transform.position = Vector2D(SCREEN_WIDTH / 2 + 140, SCREEN_HEIGHT / 2 + 170);
 
 	SDL_Event e;
-	//int deltatime = 0;
 	gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
 	while (true) {
 		deltaTime = (SDL_GetTicks() - gOldTime) / 1000.0; // tính bằng giây
@@ -316,7 +414,7 @@ void Menu() {
 		mouse.Update(e, deltaTime);
 
 		if (btnStart.isChoose) {
-
+			PlayGame();
 			return;
 		}
 		if (btnAudio.isChoose) {
@@ -459,21 +557,58 @@ void SettingMenu() {
 		SDL_Delay(20);
 	}
 }
+void PlayGame() {
+	Texture2D BG(gRenderer, SettingProject::getPath(TYPE_IMG::BG));
+	BG.SetScale(Vector2D(SCREEN_WIDTH / BG.transform.size.x, SCREEN_HEIGHT / BG.transform.size.y));
+	BG.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	
+	Texture2D broad(gRenderer, SettingProject::getPath(TYPE_IMG::BROAD));
+	broad.SetScale(Vector2D(1.22f, 1.22f));
+	broad.transform.position = Vector2D(SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 + 50);
 
-void InitSoundEffect() {
-	sounds.push_back(Mix_LoadWAV("./Sounds/BG.wav")); /// phát nhạc
-	sounds.push_back(Mix_LoadWAV("./Sounds/Mouse.wav")); /// phát nhạc
-}
-void DisAudio() {
-	Mix_Pause(soundIds[0]);
-	for (int i = 1; i < soundIds.size(); i++)
-		Mix_HaltChannel(soundIds[i]);
-}
-void PlayAudio(ID_AUDIO type) {
-	if (SettingProject::isPlayAudio == -1) return;
-	if (type == 0) {
-		Mix_Resume(soundIds[0]);
+	Texture2D border(gRenderer, SettingProject::getPath(TYPE_IMG::BORDER));
+	border.SetScale(Vector2D(1.2f, 1.2f));
+	border.transform.position = Vector2D(SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 + 50);
+
+	Mouse mouse(gRenderer, SettingProject::getPath(TYPE_IMG::MOUSE));
+	mouse.SetScale(Vector2D(0.7f, 0.7f));
+
+	Button btnHome(gRenderer, TYPE_ICON::HOME);
+	btnHome.SetScale(Vector2D(0.3f, 0.3f));
+	btnHome.transform.position = Vector2D(SCREEN_WIDTH - 50, 50);
+
+	Block* block1 = new Block(gRenderer, 0);
+	block1->SetScale(Vector2D(45/ block1->transform.size.x, 45/ block1->transform.size.y));
+	block1->transform.position = Vector2D(110, 295);
+
+	Blocks* t = new Blocks(gRenderer, BLOCK_I, Vector2D(110, 295), Vector2D(1, 1));
+	//cout << block1->transform.scale.x * block1->transform.size.x;
+	SDL_Event e;
+	//int deltatime = 0;
+	gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
+	while (true) {
+		deltaTime = (SDL_GetTicks() - gOldTime) / 1000.0; // tính bằng giây
+		//cout << deltaTime << endl;
+		SDL_PollEvent(&e); // sự kiện 
+		SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0x00);
+		SDL_RenderClear(gRenderer); // xóa dữ liệu cũ
+		BG.Update(e, deltaTime);
+		broad.Update(e, deltaTime);
+		border.Update(e, deltaTime);
+		btnHome.Update(e, deltaTime);
+		t->Update(e, deltaTime);
+
+		mouse.Update(e, deltaTime);
+
+		if (btnHome.isChoose) {
+			//Menu();
+			//return;
+			t->Flip(NULL);
+			btnHome.isChoose = false;
+		}
+		
+		SDL_RenderPresent(gRenderer); // hiển thị ra màn hình
+		gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
+		SDL_Delay(20);
 	}
-	else
-		soundIds.push_back(Mix_PlayChannel(-1, sounds[(int)type], type == 0 ? -1 : 0));
 }

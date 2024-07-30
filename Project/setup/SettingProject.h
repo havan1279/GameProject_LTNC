@@ -64,6 +64,8 @@ enum TYPE_IMG
 {
 	BG,
 	BG2,
+	BROAD,
+	BORDER,
 	MOUSE,
 	ICON,
 	BLOCK
@@ -84,10 +86,19 @@ enum ID_AUDIO {
 	AUDIO_MOUSE,
 	AUDIO_GAME_OVER
 };
+enum BLOCK_TYPE {
+	BLOCK_I,
+	BLOCK_O,
+	BLOCK_T,
+	BLOCK_L,
+	BLOCK_J,
+	BLOCK_S,
+	BLOCK_Z
+};
 namespace SettingProject {
 	static std::string pathImg = "./Images\\";
 	static std::string fileExtensions[2] = { ".png", ".jpg" };
-	static std::string fileNames[10] = { "BG", "Tetris", "iconMouse"};
+	static std::string fileNames[10] = { "BG", "Tetris", "Broad", "Border", "iconMouse"};
 	static int isPlayAudio = 1;
 	static int indexSkin = 0;
 	static std::string getPath(TYPE_IMG type, int i = 0, int k = 0) {
@@ -95,7 +106,9 @@ namespace SettingProject {
 		case BG: {
 			return pathImg + fileNames[(int)type] + to_string(rand()%(4) + 1) + fileExtensions[1];
 		}
-		case BG2: {
+		case BG2: 
+		case BROAD:
+		case BORDER:{
 			return pathImg + fileNames[(int)type] + fileExtensions[0];
 		}
 		case MOUSE: {
