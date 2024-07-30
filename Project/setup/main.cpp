@@ -17,9 +17,180 @@ using namespace std;
 
 SDL_Window* gWindow = NULL; // cửa sổ game
 SDL_Renderer* gRenderer = NULL; // màn hình xử lý
+vector <Mix_Chunk*> sounds;
+vector<int> soundIds;
 Uint32 gOldTime; // tho
 float deltaTime = 0; // chênh lệch 2 frame
 // khởi tạo sdl
+bool InitSDL();
+// đóng sdl
+void CloseSDL();
+// load ảnh
+SDL_Texture* LoadTextureFromFile(string path);
+void InitSoundEffect();
+void DisAudio();
+void PlayAudio(ID_AUDIO type);
+
+// class lưu trữ khi load ảnh lên
+class Texture2D
+{
+public:
+	SDL_Renderer* mRenderer; // màn hình hienr thị
+	Transform transform;
+	SDL_Texture* mTexture; // biến lưu thông tin
+	bool isActive;
+	Texture2D() {
+		mRenderer = NULL;
+		mTexture = NULL;
+	}
+	Texture2D(SDL_Renderer* renderer, string path) { // khởi tạo
+		mRenderer = renderer;
+		if (!LoadFromFile(path)) {
+			cout << "Loi hinh anh " << path << endl;
+		}
+		isActive = true;
+	}
+	void Free() { // xóa bộ nhớ
+		if (mTexture != NULL)
+		{
+			SDL_DestroyTexture(mTexture);
+			mTexture = NULL;
+		}
+	}
+	~Texture2D() { // giải phóng bộ nhớ
+		Free();
+		mRenderer = NULL;
+	}
+	bool LoadFromFile(string path, int type=0) { // load ảnh
+		Free(); // giải phóng cũ
+		SDL_Surface* pSurface = IMG_Load(path.c_str());
+
+		if (pSurface != NULL)
+		{
+			SDL_SetColorKey(pSurface, SDL_TRUE, SDL_MapRGB(pSurface->format, 0, 0xFF, 0xFF)); // xóa nền
+			if (type == 0) {
+				transform.size.x = pSurface->w;
+				transform.size.y = pSurface->h;
+				transform.scale = Vector2D(1, 1);
+			}
+			mTexture = SDL_CreateTextureFromSurface(mRenderer, pSurface); 
+			if (mTexture == NULL)
+			{
+				cout << "Unable to create texture from surface. Error: " << SDL_GetError() << endl;
+			}
+			SDL_FreeSurface(pSurface);
+		}
+		else
+		{
+			cout << "Unable to create texture from surface. Error: " << IMG_GetError() << endl;
+		}
+		return mTexture != NULL;
+	}
+	void SetScale(Vector2D s) {
+		transform.scale = s;
+	}
+	// hiển thị đối tượng: vị trí, cách lấy đối xứng, góc xoay, phạm vi lấy, khung hiển thị
+	virtual void Start() {
+
+	}
+	virtual void Update(SDL_Event e, float deltaTime) {
+		if (!isActive) return;
+		this->Render();
+	}
+	void Render() { // load ảnh lên màn hình xử lý
+		SDL_SetRenderDrawColor(mRenderer, 0x00, 0x00, 0x00, 0x00);
+		// vẽ đối tượng lên màn hình xử lý, với khung vừa có, góc xoay angle, và cách lấy đối xứng flip
+		float sizeX = transform.size.x * abs(transform.scale.x);
+		float sizeY = transform.size.y * abs(transform.scale.y);
+		SDL_Rect r = {transform.position.x - sizeX/2, transform.position.y - sizeY/2, sizeX, sizeY};
+		SDL_RendererFlip flip = transform.scale.x < 0 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+		float angle = transform.rotation.x;
+		SDL_RenderCopyEx(mRenderer, mTexture, NULL, &r, angle, NULL, flip);
+	}
+};
+class Mouse :public Texture2D {
+public:
+	Mouse(SDL_Renderer* renderer, string path):Texture2D(renderer, path){}
+	void Start() override {
+		Texture2D::Start();
+	}
+	void Update(SDL_Event e, float deltaTime) override {
+		Texture2D::Update(e, deltaTime);
+		transform.position = Vector2D(Mathf::Clamp(e.button.x, 0, SCREEN_WIDTH), Mathf::Clamp(e.button.y, 0, SCREEN_HEIGHT));
+	}
+};
+class Button :public Texture2D {
+public:
+	TYPE_ICON _type;
+	bool isHigh;
+	bool isClick;
+	bool isChoose;
+	Button(SDL_Renderer* renderer, TYPE_ICON type) :Texture2D(renderer, SettingProject::getPath(TYPE_IMG::ICON, (int)type)) {
+		this->_type = type;
+		isHigh = false;
+		isClick = true;
+		isChoose = false;
+	}
+	void Start() override {
+		Texture2D::Start();
+	}
+	void Update(SDL_Event e, float deltaTime) override {
+		Texture2D::Update(e, deltaTime);
+		int x = e.button.x;
+		int y = e.button.y;
+		if (x >= transform.position.x - transform.size.x*abs(transform.scale.x) / 2 && x <= transform.position.x + transform.size.x * abs(transform.scale.x/2)
+			&& y >= transform.position.y - transform.size.y * abs(transform.scale.y) / 2 && y <= transform.position.y + transform.size.y * abs(transform.scale.y/2)) { // chuột ngang qua
+			OnHigh();  // hiệu ứng phóng to
+			switch (e.type)
+			{
+				case SDL_MOUSEBUTTONDOWN:{
+					if (e.button.button == SDL_BUTTON_LEFT && !isClick) {
+						isClick = true;
+						isChoose = true;
+						PlayAudio(ID_AUDIO::AUDIO_MOUSE);
+						SDL_Delay(200);
+					}
+					break;
+				}
+				case SDL_MOUSEBUTTONUP: {
+					if (e.button.button == SDL_BUTTON_LEFT && isClick) {
+						isClick = false;
+					}
+					break;
+				}
+			}
+		}
+		else {
+			if (!isHigh) return;
+			isHigh = false;
+			SetScale(Vector2D(transform.scale.x - 0.1f*(transform.scale.x > 0 ? 1 : -1), transform.scale.y - 0.1f * (transform.scale.y > 0 ? 1 : -1)));
+		}
+	}
+	void OnHigh() {
+		if (isHigh) return;
+		isHigh = true;
+		SetScale(Vector2D(transform.scale.x + 0.1f * (transform.scale.x > 0 ? 1 : -1), transform.scale.y + 0.1f * (transform.scale.y > 0 ? 1 : -1)));
+	}
+};
+
+void Menu();
+void SettingMenu();
+vector<Texture2D*> GetListType(int type, int n = 7);
+
+int main(int argc, char* args[])
+{
+	if (InitSDL())
+	{
+		SDL_ShowCursor(SDL_DISABLE);
+		srand(time(0)); // cập nhật thời gian hiện tại để làm mới random
+		InitSoundEffect();
+		soundIds.push_back(Mix_PlayChannel(-1, sounds[0], -1));
+		Menu();
+		//SettingMenu();
+	}
+	CloseSDL();
+	return 0;
+}
 bool InitSDL()
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
@@ -102,189 +273,14 @@ SDL_Texture* LoadTextureFromFile(string path)
 	}
 	return pTexture;
 }
-
-// class lưu trữ khi load ảnh lên
-class Texture2D
-{
-public:
-	SDL_Renderer* mRenderer; // màn hình hienr thị
-	Transform transform;
-	SDL_Texture* mTexture; // biến lưu thông tin
-	bool isActive;
-	Texture2D() {
-		mRenderer = NULL;
-		mTexture = NULL;
-	}
-	Texture2D(SDL_Renderer* renderer, string path) { // khởi tạo
-		mRenderer = renderer;
-		if (!LoadFromFile(path)) {
-			cout << "Loi hinh anh " << path << endl;
-		}
-		isActive = true;
-	}
-	void Free() { // xóa bộ nhớ
-		if (mTexture != NULL)
-		{
-			SDL_DestroyTexture(mTexture);
-			mTexture = NULL;
-		}
-	}
-	~Texture2D() { // giải phóng bộ nhớ
-		Free();
-		mRenderer = NULL;
-	}
-	bool LoadFromFile(string path, int type=0) { // load ảnh
-		Free(); // giải phóng cũ
-		SDL_Surface* pSurface = IMG_Load(path.c_str());
-
-		if (pSurface != NULL)
-		{
-			SDL_SetColorKey(pSurface, SDL_TRUE, SDL_MapRGB(pSurface->format, 0, 0xFF, 0xFF)); // xóa nền
-			if (type == 0) {
-				transform.size.x = pSurface->w;
-				transform.size.y = pSurface->h;
-				transform.scale = Vector2D(1, 1);
-			}
-			mTexture = SDL_CreateTextureFromSurface(mRenderer, pSurface); 
-			if (mTexture == NULL)
-			{
-				cout << "Unable to create texture from surface. Error: " << SDL_GetError() << endl;
-			}
-			SDL_FreeSurface(pSurface);
-		}
-		else
-		{
-			cout << "Unable to create texture from surface. Error: " << IMG_GetError() << endl;
-		}
-		return mTexture != NULL;
-	}
-	void SetScale(Vector2D s) {
-		transform.scale = s;
-	}
-	// hiển thị đối tượng: vị trí, cách lấy đối xứng, góc xoay, phạm vi lấy, khung hiển thị
-	virtual void Start() {
-
-	}
-	virtual void Update(SDL_Event e, float deltaTime) {
-		if (!isActive) return;
-		this->Render();
-	}
-	void Render() { // load ảnh lên màn hình xử lý
-		SDL_SetRenderDrawColor(mRenderer, 0x00, 0x00, 0x00, 0x00);
-		// vẽ đối tượng lên màn hình xử lý, với khung vừa có, góc xoay angle, và cách lấy đối xứng flip
-		float sizeX = transform.size.x * abs(transform.scale.x);
-		float sizeY = transform.size.y * abs(transform.scale.y);
-		SDL_Rect r = {transform.position.x - sizeX/2, transform.position.y - sizeY/2, sizeX, sizeY};
-		SDL_RendererFlip flip = transform.scale.x < 0 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-		float angle = transform.rotation.x;
-		SDL_RenderCopyEx(mRenderer, mTexture, NULL, &r, angle, NULL, flip);
-	}
-};
-
-class Mouse :public Texture2D {
-public:
-	Mouse(SDL_Renderer* renderer, string path):Texture2D(renderer, path){}
-	void Start() override {
-		Texture2D::Start();
-	}
-	void Update(SDL_Event e, float deltaTime) override {
-		Texture2D::Update(e, deltaTime);
-		transform.position = Vector2D(Mathf::Clamp(e.button.x, 0, SCREEN_WIDTH), Mathf::Clamp(e.button.y, 0, SCREEN_HEIGHT));
-	}
-};
-
-class Button :public Texture2D {
-public:
-	TYPE_ICON _type;
-	bool isHigh;
-	bool isClick;
-	Button(SDL_Renderer* renderer, TYPE_ICON type) :Texture2D(renderer, SettingProject::getPath(TYPE_IMG::ICON, (int)type)) {
-		this->_type = type;
-		isHigh = false;
-	}
-	void Start() override {
-		Texture2D::Start();
-	}
-	void Update(SDL_Event e, float deltaTime) override {
-		Texture2D::Update(e, deltaTime);
-		int x = e.button.x;
-		int y = e.button.y;
-		if (x >= transform.position.x - transform.size.x*transform.scale.x / 2 && x <= transform.position.x + transform.size.x * transform.scale.x/2
-			&& y >= transform.position.y - transform.size.y * transform.scale.y / 2 && y <= transform.position.y + transform.size.y * transform.scale.y/2) { // chuột ngang qua
-			OnHigh();  // hiệu ứng phóng to
-			switch (e.type)
-			{
-				case SDL_MOUSEBUTTONDOWN:{
-					if (e.button.button == SDL_BUTTON_LEFT && !isClick) {
-						isClick = true;
-						OnClick(); // gọi sk click
-					}
-					break;
-				}
-				case SDL_MOUSEBUTTONUP: {
-					if (e.button.button == SDL_BUTTON_LEFT && isClick) {
-						isClick = false;
-					}
-					break;
-				}
-			}
-		}
-		else {
-			if (!isHigh) return;
-			isHigh = false;
-			SetScale(Vector2D(transform.scale.x - 0.2f, transform.scale.y - 0.2f));
-		}
-	}
-	void OnHigh() {
-		if (isHigh) return;
-		isHigh = true;
-		SetScale(Vector2D(transform.scale.x + 0.2f, transform.scale.y + 0.2f));
-	}
-	void OnClick() {
-		cout << "Click";
-		switch (_type) {
-		case REPEAT: {
-
-			break;
-		}
-		case HOME: {
-			break;
-		}
-		case START: {
-			break;
-		}
-		case AUDIO_ON: {
-			_type = AUDIO_OFF;
-			if (!LoadFromFile(SettingProject::getPath(TYPE_IMG::ICON, (int)_type), 1)) {
-				cout << "Loi hinh anh " << SettingProject::getPath(TYPE_IMG::ICON, (int)_type) << endl;
-			}
-			break;
-		}
-		case AUDIO_OFF: {
-			_type = AUDIO_ON;
-			if (!LoadFromFile(SettingProject::getPath(TYPE_IMG::ICON, (int)_type), 1)) {
-				cout << "Loi hinh anh " << SettingProject::getPath(TYPE_IMG::ICON, (int)_type) << endl;
-			}
-			break;
-		}
-		case SETTING: {
-			break;
-		}
-		case CHOOSE: {
-			break;
-		}
-		case MENU: {
-
-			break;
-		}
-		}
-	}
-};
-
 void Menu() {
 	Texture2D BG(gRenderer, SettingProject::getPath(TYPE_IMG::BG));
 	BG.SetScale(Vector2D(SCREEN_WIDTH / BG.transform.size.x, SCREEN_HEIGHT / BG.transform.size.y));
 	BG.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+
+	Texture2D BG2(gRenderer, SettingProject::getPath(TYPE_IMG::BG2));
+	BG2.SetScale(Vector2D(SCREEN_WIDTH / BG.transform.size.x + 1, SCREEN_HEIGHT / BG.transform.size.y + 1));
+	BG2.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 150);
 	//cout << SCREEN_WIDTH  << " " << BG->transform.size.x << " " << SCREEN_HEIGHT  << " " << BG->transform.size.y;
 
 	Mouse mouse(gRenderer, SettingProject::getPath(TYPE_IMG::MOUSE));
@@ -292,32 +288,53 @@ void Menu() {
 
 
 	Button btnStart(gRenderer, TYPE_ICON::START);
-	btnStart.SetScale(Vector2D(4, 4));
-	btnStart.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 100);
+	btnStart.SetScale(Vector2D(1, 1));
+	btnStart.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
 	Button btnAudio(gRenderer, TYPE_ICON::AUDIO_ON);
-	btnAudio.SetScale(Vector2D(2.0f, 2.0f));
-	btnAudio.transform.position = Vector2D(SCREEN_WIDTH / 2 - 140, SCREEN_HEIGHT / 2 + 70);
+	btnAudio.SetScale(Vector2D(0.5f, 0.5f));
+	btnAudio.transform.position = Vector2D(SCREEN_WIDTH / 2 - 140, SCREEN_HEIGHT / 2 + 170);
 
 	Button btnSetting(gRenderer, TYPE_ICON::SETTING);
-	btnSetting.SetScale(Vector2D(2.0f, 2.0f));
-	btnSetting.transform.position = Vector2D(SCREEN_WIDTH / 2 + 140, SCREEN_HEIGHT / 2 + 70);
+	btnSetting.SetScale(Vector2D(0.5f, 0.5f));
+	btnSetting.transform.position = Vector2D(SCREEN_WIDTH / 2 + 140, SCREEN_HEIGHT / 2 + 170);
 
 	SDL_Event e;
 	//int deltatime = 0;
 	gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
 	while (true) {
-		deltaTime = (SDL_GetTicks() - gOldTime)/1000.0; // tính bằng giây
+		deltaTime = (SDL_GetTicks() - gOldTime) / 1000.0; // tính bằng giây
 		//cout << deltaTime << endl;
 		SDL_PollEvent(&e); // sự kiện 
 		SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0x00);
 		SDL_RenderClear(gRenderer); // xóa dữ liệu cũ
 		BG.Update(e, deltaTime);
+		BG2.Update(e, deltaTime);
 		btnStart.Update(e, deltaTime);
 		btnAudio.Update(e, deltaTime);
 		btnSetting.Update(e, deltaTime);
 		mouse.Update(e, deltaTime);
 
+		if (btnStart.isChoose) {
+
+			return;
+		}
+		if (btnAudio.isChoose) {
+			btnAudio.isChoose = false;
+			SettingProject::isPlayAudio *= -1;
+			if (SettingProject::isPlayAudio == 1) {
+				PlayAudio(ID_AUDIO::AUDIO_BG);
+				btnAudio.LoadFromFile(SettingProject::getPath(TYPE_IMG::ICON, TYPE_ICON::AUDIO_ON), 1);
+			}
+			else {
+				DisAudio();
+				btnAudio.LoadFromFile(SettingProject::getPath(TYPE_IMG::ICON, TYPE_ICON::AUDIO_OFF), 1);
+			}
+		}
+		if (btnSetting.isChoose) {
+			SettingMenu();
+			return;
+		}
 
 		SDL_RenderPresent(gRenderer); // hiển thị ra màn hình
 		//cout << SDL_GetTicks() - gOldTime << endl;
@@ -326,16 +343,137 @@ void Menu() {
 		SDL_Delay(20);
 	}
 }
-int main(int argc, char* args[])
-{
-	if (InitSDL())
-	{
-		SDL_ShowCursor(SDL_DISABLE);
-		srand(time(0)); // cập nhật thời gian hiện tại để làm mới random
-		/*Mix_Chunk* sound = Mix_LoadWAV("./Sounds/BackGround.wav"); /// phát nhạc
-		Mix_PlayChannel(-1, sound, 0);*/
-		Menu();
+
+vector<Texture2D*> GetListType(int type, int n) {
+	vector<Texture2D*> result;
+	for (int i = 0; i < n; i++) {
+		Texture2D* x = new Texture2D(gRenderer, SettingProject::getPath(BLOCK, type + 1, i + 1));
+		x->SetScale(Vector2D(0.2, 0.2));
+		result.push_back(x);
 	}
-	CloseSDL();
-	return 0;
+	return result;
+}
+void SettingMenu() {
+	Texture2D BG(gRenderer, SettingProject::getPath(TYPE_IMG::BG));
+	BG.SetScale(Vector2D(SCREEN_WIDTH / BG.transform.size.x, SCREEN_HEIGHT / BG.transform.size.y));
+	BG.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	//cout << SCREEN_WIDTH  << " " << BG->transform.size.x << " " << SCREEN_HEIGHT  << " " << BG->transform.size.y;
+
+	Mouse mouse(gRenderer, SettingProject::getPath(TYPE_IMG::MOUSE));
+	mouse.SetScale(Vector2D(0.7f, 0.7f));
+
+	Button btnHome(gRenderer, TYPE_ICON::HOME);
+	btnHome.SetScale(Vector2D(0.3f, 0.3f));
+	btnHome.transform.position = Vector2D(SCREEN_WIDTH - 50, 50);
+
+	Button btnChoose(gRenderer, TYPE_ICON::CHOOSE);
+	btnChoose.SetScale(Vector2D(0.7f, 0.7f));
+	btnChoose.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 300);
+
+	Button btnLeft(gRenderer, TYPE_ICON::CHOOSE_LEFT);
+	btnLeft.SetScale(Vector2D(0.5f, 0.5f));
+	btnLeft.transform.position = Vector2D(SCREEN_WIDTH / 2 - 200, SCREEN_HEIGHT / 2 + 300);
+
+	Button btnRight(gRenderer, TYPE_ICON::CHOOSE_LEFT);
+	btnRight.SetScale(Vector2D(-0.5f, 0.5f));
+	btnRight.transform.position = Vector2D(SCREEN_WIDTH / 2 + 200, SCREEN_HEIGHT / 2 + 300);
+
+
+	int index = SettingProject::indexSkin;
+
+	float _x = 20;
+	vector<Texture2D*> imgs = GetListType(index);
+	imgs[0]->transform.position = Vector2D(150 - _x, 300);
+	imgs[1]->transform.position = Vector2D(300 - _x, 300);
+	imgs[2]->transform.position = Vector2D(450 - _x, 300);
+	imgs[3]->transform.position = Vector2D(100 - _x, 500);
+	imgs[4]->transform.position = Vector2D(250 - _x, 500);
+	imgs[5]->transform.position = Vector2D(400 - _x, 500);
+	imgs[6]->transform.position = Vector2D(550 - _x, 500);
+
+	SDL_Event e;
+	//int deltatime = 0;
+	gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
+	while (true) {
+		deltaTime = (SDL_GetTicks() - gOldTime) / 1000.0; // tính bằng giây
+		//cout << deltaTime << endl;
+		SDL_PollEvent(&e); // sự kiện 
+		SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0x00);
+		SDL_RenderClear(gRenderer); // xóa dữ liệu cũ
+		BG.Update(e, deltaTime);
+		btnHome.Update(e, deltaTime);
+		btnChoose.Update(e, deltaTime);
+		btnLeft.Update(e, deltaTime);
+		btnRight.Update(e, deltaTime);
+		for (int i = 0; i < imgs.size(); i++)
+			imgs[i]->Update(e, deltaTime);
+		mouse.Update(e, deltaTime);
+
+		if (btnHome.isChoose) {
+			for (int i = 0; i < imgs.size(); i++)
+				delete imgs[i];
+			Menu();
+			return;
+		}
+		if (btnChoose.isChoose) {
+			for (int i = 0; i < imgs.size(); i++)
+				delete imgs[i];
+			SettingProject::indexSkin = index;
+			Menu();
+			return;
+		}
+		if (btnLeft.isChoose) {
+			btnLeft.isChoose = false;
+			if (index > 0) {
+				index--;
+				for (int i = 0; i < imgs.size(); i++)
+					delete imgs[i];
+				imgs = GetListType(index);
+				imgs[0]->transform.position = Vector2D(150 - _x, 300);
+				imgs[1]->transform.position = Vector2D(300 - _x, 300);
+				imgs[2]->transform.position = Vector2D(450 - _x, 300);
+				imgs[3]->transform.position = Vector2D(100 - _x, 500);
+				imgs[4]->transform.position = Vector2D(250 - _x, 500);
+				imgs[5]->transform.position = Vector2D(400 - _x, 500);
+				imgs[6]->transform.position = Vector2D(550 - _x, 500);
+			}
+		}
+		if (btnRight.isChoose) {
+			btnRight.isChoose = false;
+			if (index < 7) {
+				index++;
+				for (int i = 0; i < imgs.size(); i++)
+					delete imgs[i];
+				imgs = GetListType(index);
+				imgs[0]->transform.position = Vector2D(150 - _x, 300);
+				imgs[1]->transform.position = Vector2D(300 - _x, 300);
+				imgs[2]->transform.position = Vector2D(450 - _x, 300);
+				imgs[3]->transform.position = Vector2D(100 - _x, 500);
+				imgs[4]->transform.position = Vector2D(250 - _x, 500);
+				imgs[5]->transform.position = Vector2D(400 - _x, 500);
+				imgs[6]->transform.position = Vector2D(550 - _x, 500);
+			}
+		}
+		SDL_RenderPresent(gRenderer); // hiển thị ra màn hình
+		gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
+		SDL_Delay(20);
+	}
+}
+
+void InitSoundEffect() {
+	sounds.push_back(Mix_LoadWAV("./Sounds/BG.wav")); /// phát nhạc
+	sounds.push_back(Mix_LoadWAV("./Sounds/Mouse.wav")); /// phát nhạc
+}
+void DisAudio() {
+	Mix_Pause(soundIds[0]);
+	for (int i = 1; i < soundIds.size(); i++)
+		Mix_HaltChannel(soundIds[i]);
+}
+void PlayAudio(ID_AUDIO type) {
+	if (SettingProject::isPlayAudio == -1) return;
+	if (type == 0) {
+		Mix_Resume(soundIds[0]);
+	}
+	else
+		soundIds.push_back(Mix_PlayChannel(-1, sounds[(int)type], type == 0 ? -1 : 0));
 }

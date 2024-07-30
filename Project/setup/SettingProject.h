@@ -63,8 +63,10 @@ public:
 enum TYPE_IMG
 {
 	BG,
+	BG2,
 	MOUSE,
-	ICON
+	ICON,
+	BLOCK
 };
 enum TYPE_ICON {
 	REPEAT,
@@ -74,16 +76,27 @@ enum TYPE_ICON {
 	AUDIO_OFF,
 	SETTING,
 	CHOOSE,
-	MENU
+	MENU,
+	CHOOSE_LEFT
+};
+enum ID_AUDIO {
+	AUDIO_BG,
+	AUDIO_MOUSE,
+	AUDIO_GAME_OVER
 };
 namespace SettingProject {
 	static std::string pathImg = "./Images\\";
 	static std::string fileExtensions[2] = { ".png", ".jpg" };
-	static std::string fileNames[10] = { "BG", "iconMouse" };
-	static std::string getPath(TYPE_IMG type, int i = 0) {
+	static std::string fileNames[10] = { "BG", "Tetris", "iconMouse"};
+	static int isPlayAudio = 1;
+	static int indexSkin = 0;
+	static std::string getPath(TYPE_IMG type, int i = 0, int k = 0) {
 		switch (type) {
 		case BG: {
 			return pathImg + fileNames[(int)type] + to_string(rand()%(4) + 1) + fileExtensions[1];
+		}
+		case BG2: {
+			return pathImg + fileNames[(int)type] + fileExtensions[0];
 		}
 		case MOUSE: {
 			return pathImg + fileNames[(int)type] + fileExtensions[0];
@@ -91,7 +104,9 @@ namespace SettingProject {
 		case ICON: {
 			return pathImg + to_string(i + 1) + fileExtensions[0];
 		}
+		case BLOCK: {
+			return pathImg + to_string(i*10 +k) + fileExtensions[0];
 		}
-		
+		}
 	}
 }
