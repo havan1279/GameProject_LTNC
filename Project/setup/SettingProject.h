@@ -29,6 +29,9 @@ public:
 	Vector2D operator-(Vector2D other) {
 		return Vector2D(x - other.x, y - other.y);
 	}
+	Vector2D operator*(Vector2D other) {
+		return Vector2D(x * other.x, y * other.y);
+	}
 	Vector2D operator*(float t) {
 		return Vector2D(x * t, y * t);
 	}

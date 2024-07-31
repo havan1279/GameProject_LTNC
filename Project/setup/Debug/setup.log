@@ -1,5 +1,5 @@
 ﻿  main.cpp
-C:\Learn\GameProject_LTNC\Project\setup\SettingProject.h(62,2): warning C4091: 'static ': ignored on left of 'Mathf' when no variable is declared
+C:\Learn\GameProject_LTNC\Project\setup\SettingProject.h(65,2): warning C4091: 'static ': ignored on left of 'Mathf' when no variable is declared
 C:\Learn\GameProject_LTNC\Project\setup\main.cpp(69,32): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
 C:\Learn\GameProject_LTNC\Project\setup\main.cpp(70,32): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
 C:\Learn\GameProject_LTNC\Project\setup\main.cpp(102,38): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
@@ -12,18 +12,20 @@ C:\Learn\GameProject_LTNC\Project\setup\main.cpp(102,88): warning C4838: convers
 C:\Learn\GameProject_LTNC\Project\setup\main.cpp(102,88): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 C:\Learn\GameProject_LTNC\Project\setup\main.cpp(116,54): warning C4244: 'argument': conversion from 'Sint32' to 'float', possible loss of data
 C:\Learn\GameProject_LTNC\Project\setup\main.cpp(116,97): warning C4244: 'argument': conversion from 'Sint32' to 'float', possible loss of data
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(253,21): warning C4018: '<': signed/unsigned mismatch
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(267,13): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(365,20): warning C4018: '<': signed/unsigned mismatch
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(404,43): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(449,29): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(449,24): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(496,43): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(506,21): warning C4018: '<': signed/unsigned mismatch
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(511,22): warning C4018: '<': signed/unsigned mismatch
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(517,22): warning C4018: '<': signed/unsigned mismatch
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(527,23): warning C4018: '<': signed/unsigned mismatch
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(543,23): warning C4018: '<': signed/unsigned mismatch
-C:\Learn\GameProject_LTNC\Project\setup\main.cpp(590,43): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Learn\GameProject_LTNC\Project\setup\SettingProject.h(124): warning C4715: 'SettingProject::getPath': not all control paths return a value
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(406,21): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(456,13): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(554,20): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(593,43): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(638,29): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(638,24): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(685,43): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(695,21): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(700,22): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(706,22): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(716,23): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(732,23): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(773,79): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(773,74): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(779,43): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\SettingProject.h(127): warning C4715: 'SettingProject::getPath': not all control paths return a value
   setup.vcxproj -> C:\Learn\GameProject_LTNC\Project\Debug\setup.exe

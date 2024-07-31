@@ -178,7 +178,7 @@ public:
 	Block(SDL_Renderer* renderer, int type, int lvBlock = 0) : Texture2D(renderer, SettingProject::getPath(BLOCK, SettingProject::indexSkin + 1, type + 1)) {
 		_type = type;
 		_lvBlock = lvBlock;
-		SetScale(Vector2D(sizeBlock / transform.size.x, sizeBlock / transform.size.y));
+		transform.size = Vector2D(sizeBlock, sizeBlock);
 	}
 	void Start() override {
 
@@ -193,16 +193,25 @@ public:
 	Vector2D _position;
 	int _face;
 	vector<Block*> _listBlock;
-
-	Blocks(SDL_Renderer* renderer, BLOCK_TYPE _type, Vector2D _p, Vector2D _s) {
+	float timeDelay;
+	float _timeDelay;
+	bool isClick = false;
+	Blocks(SDL_Renderer* renderer, BLOCK_TYPE _type, Vector2D _p, Vector2D _s, float _time) {
 		_typeBlock = _type;
 		_position = _p;
 		_face = rand() % 4;
+		timeDelay = _time;
+		_timeDelay = _time;
+		Block* b1 = new Block(gRenderer, (int)_typeBlock);
+		Block* b2 = new Block(gRenderer, (int)_typeBlock);
+		Block* b3 = new Block(gRenderer, (int)_typeBlock);
+		Block* b4 = new Block(gRenderer, (int)_typeBlock);
 
-		Block* b1 = new Block(gRenderer, (int)BLOCK_I);
-		Block* b2 = new Block(gRenderer, (int)BLOCK_I);
-		Block* b3 = new Block(gRenderer, (int)BLOCK_I);
-		Block* b4 = new Block(gRenderer, (int)BLOCK_I);
+		b1->SetScale(_s);
+		b2->SetScale(_s);
+		b3->SetScale(_s);
+		b4->SetScale(_s);
+
 		_listBlock.push_back(b1);
 		_listBlock.push_back(b2);
 		_listBlock.push_back(b3);
@@ -222,36 +231,216 @@ public:
 		switch (_typeBlock) {
 			case BLOCK_I: {
 				if (_face == 0) {
-					_listBlock[0]->transform.position = _position + Vector2D(-1, 0) * (sizeBlock - 9);
-					_listBlock[1]->transform.position = _position + Vector2D(0, 0) * (sizeBlock - 9);
-					_listBlock[2]->transform.position = _position + Vector2D(1, 0) * (sizeBlock - 9);
-					_listBlock[3]->transform.position = _position + Vector2D(2, 0) * (sizeBlock - 9);
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(2, 0) * (sizeBlock - 9);
 				}
 				else if (_face == 1) {
-					_listBlock[0]->transform.position = _position + Vector2D(0, -1) * (sizeBlock - 9);
-					_listBlock[1]->transform.position = _position + Vector2D(0, 0) * (sizeBlock - 9);
-					_listBlock[2]->transform.position = _position + Vector2D(0, 1) * (sizeBlock - 9);
-					_listBlock[3]->transform.position = _position + Vector2D(0, 2) * (sizeBlock - 9);
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 2) * (sizeBlock - 9);
 				}
 				else if (_face == 2) {
-					_listBlock[0]->transform.position = _position + Vector2D(1, 0) * (sizeBlock - 9);
-					_listBlock[1]->transform.position = _position + Vector2D(0, 0) * (sizeBlock - 9);
-					_listBlock[2]->transform.position = _position + Vector2D(-1, 0) * (sizeBlock - 9);
-					_listBlock[3]->transform.position = _position + Vector2D(-2, 0) * (sizeBlock - 9);
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-2, 0) * (sizeBlock - 9);
 				}
 				else if (_face == 3) {
-					_listBlock[0]->transform.position = _position + Vector2D(0, -2) * (sizeBlock - 9);
-					_listBlock[1]->transform.position = _position + Vector2D(0, -1) * (sizeBlock - 9);
-					_listBlock[2]->transform.position = _position + Vector2D(0, 0) * (sizeBlock - 9);
-					_listBlock[3]->transform.position = _position + Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -2) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+				}
+				break;
+			}
+			case BLOCK_O: {
+				_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+				_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+				_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+				_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 1) * (sizeBlock - 9);
+				break;
+			}
+			case BLOCK_T: {
+				if (_face == 0) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+				}
+				else if (_face == 1) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+				}
+				else if (_face == 2) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+				}
+				else if (_face == 3) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+				}
+				break;
+			}
+			case BLOCK_L: {
+				if (_face == 0) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 1) * (sizeBlock - 9);
+				}
+				else if (_face == 1) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+				}
+				else if (_face == 2) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, -1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+				}
+				else if (_face == 3) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+				}
+				break;
+			}
+			case BLOCK_J: {
+				if (_face == 0) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, -1) * (sizeBlock - 9);
+				}
+				else if (_face == 1) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+				}
+				else if (_face == 2) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+				}
+				else if (_face == 3) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+				}
+				break;
+			}
+			case BLOCK_S: {
+				//cout << _face << endl;
+				if (_face == 0) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 1) * (sizeBlock - 9);
+				}
+				else if (_face == 1) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, -1) * (sizeBlock - 9);
+				}
+				else if (_face == 2) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, -1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+				}
+				else if (_face == 3) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 1) * (sizeBlock - 9);
+				}
+				break;
+			}
+			case BLOCK_Z: {
+				cout << _face << endl;
+				if (_face == 0) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 1) * (sizeBlock - 9);
+				}
+				else if (_face == 1) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 1) * (sizeBlock - 9);
+				}
+				else if (_face == 2) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, -1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, -1) * (sizeBlock - 9);
+				}
+				else if (_face == 3) {
+					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
+					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 1) * (sizeBlock - 9);
+					_listBlock[2]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
+					_listBlock[3]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, -1) * (sizeBlock - 9);
 				}
 				break;
 			}
 		}
 	}
-	void Update(SDL_Event e, float deltaTime) {
+	void Update(SDL_Event e, float deltaTime, int** matrix) {
 		for (int i = 0; i < _listBlock.size(); i++)
 			_listBlock[i]->Update(e, deltaTime);
+		if (timeDelay < 0) return;
+		if (e.type == SDL_KEYDOWN && !isClick) {
+			isClick = true;
+			switch (e.key.keysym.sym) {
+			case SDLK_LEFT: {
+				Move(Vector2D(-1, 0));
+				break;
+			}
+			case SDLK_RIGHT: {
+				Move(Vector2D(1, 0));
+				break;
+			}
+			case SDLK_DOWN: {
+				Move(Vector2D(0, 1));
+				break;
+			}
+			case SDLK_UP: {
+				Flip(matrix);
+				break;
+			}
+			}
+		}
+		else if (e.type == SDL_KEYUP) {
+			isClick = false;
+		}
+		if (_timeDelay > 0) {
+			_timeDelay -= deltaTime;
+		}
+		else {
+			_timeDelay = timeDelay;
+			Move(Vector2D(0, 1));
+		}
+	}
+	void Move(Vector2D velocity) {
+		_position += velocity*(sizeBlock - 9);
+		UpdateIndex();
 	}
 };
 void Menu();
@@ -581,7 +770,7 @@ void PlayGame() {
 	block1->SetScale(Vector2D(45/ block1->transform.size.x, 45/ block1->transform.size.y));
 	block1->transform.position = Vector2D(110, 295);
 
-	Blocks* t = new Blocks(gRenderer, BLOCK_I, Vector2D(110, 295), Vector2D(1, 1));
+	Blocks* t = new Blocks(gRenderer, BLOCK_Z, Vector2D(500, 295), Vector2D(0.8, 0.8), -1);// 110, 295
 	//cout << block1->transform.scale.x * block1->transform.size.x;
 	SDL_Event e;
 	//int deltatime = 0;
@@ -596,15 +785,13 @@ void PlayGame() {
 		broad.Update(e, deltaTime);
 		border.Update(e, deltaTime);
 		btnHome.Update(e, deltaTime);
-		t->Update(e, deltaTime);
+		t->Update(e, deltaTime, NULL);
 
 		mouse.Update(e, deltaTime);
 
 		if (btnHome.isChoose) {
-			//Menu();
-			//return;
-			t->Flip(NULL);
-			btnHome.isChoose = false;
+			Menu();
+			return;
 		}
 		
 		SDL_RenderPresent(gRenderer); // hiển thị ra màn hình
