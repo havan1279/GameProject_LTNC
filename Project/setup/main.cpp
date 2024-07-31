@@ -169,7 +169,43 @@ public:
 		SetScale(Vector2D(transform.scale.x + 0.1f * (transform.scale.x > 0 ? 1 : -1), transform.scale.y + 0.1f * (transform.scale.y > 0 ? 1 : -1)));
 	}
 };
+class Score {
+public:
+	SDL_Renderer* mRenderer;
+	Texture2D* txtName;
+	vector<Texture2D*> imgs;
+	Vector2D position;
+	Vector2D scale;
 
+	Score(SDL_Renderer* renderer, Vector2D p, Vector2D s) {
+		txtName = new Texture2D(renderer, SettingProject::getPath(TYPE_IMG::SCORE));
+		txtName->transform.position = p - Vector2D(70, 0);
+		mRenderer = renderer;
+		position = p;
+		scale = s;
+	}
+	void Update(SDL_Event e, float deltaTime){
+		txtName->Update(e, deltaTime);
+		for (int i = 0; i < imgs.size(); i++)
+			imgs[i]->Update(e, deltaTime);
+	}
+	void SetValue(int score) {
+		if (score > 99999)
+			score = 99999;
+		Destroy();
+		string s_score = to_string(score);
+		for (int i = 0; i < s_score.size(); i++) {
+			Texture2D* t = new Texture2D(mRenderer, SettingProject::getPath(TYPE_IMG::NUMBER, s_score[i] - 48));
+			t->transform.position = position + Vector2D(25, 0) * i;
+			imgs.push_back(t);
+		}
+	}
+	void Destroy() {
+		for (int i = 0; i < imgs.size(); i++)
+			delete imgs[i];
+		imgs.clear();
+	}
+};
 class Block : public Texture2D {
 public:
 	int _type;
@@ -199,9 +235,40 @@ public:
 	Blocks(SDL_Renderer* renderer, BLOCK_TYPE _type, Vector2D _p, Vector2D _s, float _time) {
 		_typeBlock = _type;
 		_position = _p;
-		_face = rand() % 4;
 		timeDelay = _time;
 		_timeDelay = _time;
+
+		switch (_typeBlock) {
+		case BLOCK_I: {
+			_face = rand() % 2;
+			break;
+		}
+		case BLOCK_O: {
+			_face = rand() % 4;
+			break;
+		}
+		case BLOCK_T: {
+			_face = rand() % 4;
+			break;
+		}
+		case BLOCK_L: {
+			_face = rand() % 4;
+			break;
+		}
+		case BLOCK_J: {
+			_face = rand() % 4;
+			break;
+		}
+		case BLOCK_S: {
+			_face = rand() % 4;
+			break;
+		}
+		case BLOCK_Z: {
+			_face = rand() % 4;
+			break;
+		}
+		}
+
 		Block* b1 = new Block(gRenderer, (int)_typeBlock);
 		Block* b2 = new Block(gRenderer, (int)_typeBlock);
 		Block* b3 = new Block(gRenderer, (int)_typeBlock);
@@ -345,7 +412,6 @@ public:
 				break;
 			}
 			case BLOCK_S: {
-				//cout << _face << endl;
 				if (_face == 0) {
 					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(1, 0) * (sizeBlock - 9);
 					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
@@ -373,7 +439,6 @@ public:
 				break;
 			}
 			case BLOCK_Z: {
-				cout << _face << endl;
 				if (_face == 0) {
 					_listBlock[0]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(-1, 0) * (sizeBlock - 9);
 					_listBlock[1]->transform.position = _position + _listBlock[0]->transform.scale*Vector2D(0, 0) * (sizeBlock - 9);
@@ -441,6 +506,72 @@ public:
 	void Move(Vector2D velocity) {
 		_position += velocity*(sizeBlock - 9);
 		UpdateIndex();
+	}
+};
+class BlockManager {
+public:
+	Texture2D* txtName;
+	Blocks* show;
+	SDL_Renderer* mRenderer;
+	Vector2D position;
+
+	int pre1, pre2;
+
+	int m, n;
+	int** matrix;
+
+	BlockManager(SDL_Renderer* renderer, Vector2D p) {
+		mRenderer = renderer;
+		position = p;
+		txtName = new Texture2D(renderer, SettingProject::getPath(TYPE_IMG::NEXT));
+		txtName->transform.position = p - Vector2D(0, 70);
+
+		m = 20;
+		n = 10;
+		int** matrix = new int* [m];
+		for (int i = 0; i < m; i++)
+			matrix[i] = new int[n];
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++)
+				matrix[i][j] = 0;
+
+		pre1 = -1;
+		pre2 = -1;
+
+		InitBlock();
+	}
+	void Update(SDL_Event e, float deltaTime) {
+		txtName->Update(e, deltaTime);
+		show->Update(e, deltaTime, NULL);
+	}
+	void InitBlock() {
+		float tiLe[] = { 20, 10, 15, 15, 15, 12,5, 12.5 };
+		int result;
+		for (int i = 0; i < 10; i++) {
+			float x = (rand() % 1000) / 10.0;
+			vector<int> listPoint;
+			for (int j = 0; j < 7; j++) {
+				if (x < tiLe[j]) {
+					listPoint.push_back(j);
+				}
+			}
+			if (listPoint.size() > 0) {
+				result = listPoint[rand() % listPoint.size()];
+				if (result != pre1 && result != pre2) {
+					show = new Blocks(gRenderer, (BLOCK_TYPE)result, position, Vector2D(0.8, 0.8), -1);
+					pre2 = pre1;
+					pre1 = result;
+					break;
+				}
+			}
+		}
+	}
+	int getValue(Vector2D p) {
+		// start X: 40: 0
+		int j = (p.x - 40) / 40;
+		int i = (p.y - 135) / 40;
+		cout << p.x << ", " << p.y << " - " << j << " " << i << endl;
+		return 0;
 	}
 };
 void Menu();
@@ -766,11 +897,16 @@ void PlayGame() {
 	btnHome.SetScale(Vector2D(0.3f, 0.3f));
 	btnHome.transform.position = Vector2D(SCREEN_WIDTH - 50, 50);
 
+	int score = 0;
+	Score showScore(gRenderer, Vector2D(170, 50), Vector2D(1, 1));
+	showScore.SetValue(score);
+
 	Block* block1 = new Block(gRenderer, 0);
 	block1->SetScale(Vector2D(45/ block1->transform.size.x, 45/ block1->transform.size.y));
 	block1->transform.position = Vector2D(110, 295);
 
-	Blocks* t = new Blocks(gRenderer, BLOCK_Z, Vector2D(500, 295), Vector2D(0.8, 0.8), -1);// 110, 295
+	BlockManager* t = new BlockManager(gRenderer, Vector2D(500, 295));
+	Blocks* t2 = new Blocks(gRenderer, BLOCK_Z, Vector2D(40, 295), Vector2D(1, 1), -1);// 110, 295
 	//cout << block1->transform.scale.x * block1->transform.size.x;
 	SDL_Event e;
 	//int deltatime = 0;
@@ -785,9 +921,17 @@ void PlayGame() {
 		broad.Update(e, deltaTime);
 		border.Update(e, deltaTime);
 		btnHome.Update(e, deltaTime);
-		t->Update(e, deltaTime, NULL);
+		showScore.Update(e, deltaTime);
+
+		t->getValue(Vector2D(e.button.x, e.button.y));
+		//cout << e.button.x << " " << e.button.y << endl;
+		t->Update(e, deltaTime);
+		t2->Update(e, deltaTime, NULL);
 
 		mouse.Update(e, deltaTime);
+
+		score++;
+		showScore.SetValue(score);
 
 		if (btnHome.isChoose) {
 			Menu();
