@@ -21,7 +21,13 @@ vector <Mix_Chunk*> sounds;
 vector<int> soundIds;
 Uint32 gOldTime; // tho
 float deltaTime = 0; // chênh lệch 2 frame
+bool isPlayGame = true;
 float sizeBlock = 45;
+Vector2D startIndex = Vector2D(38, 149.8);
+
+int sizeM = 20, sizeN = 10;
+int field[20][10] = { 0 };
+
 // khởi tạo sdl
 bool InitSDL();
 // đóng sdl
@@ -31,15 +37,6 @@ SDL_Texture* LoadTextureFromFile(string path);
 void InitSoundEffect();
 void DisAudio();
 void PlayAudio(ID_AUDIO type);
-
-Vector2D ConvertPositionToIndex(Vector2D p) {
-	// 38x149.8 -> 364.7 x 839.5 - 36.3
-	float j = (p.x - 38) / 36.3;
-	float i = (p.y - 135) / 36.3;
-	//cout << p.x << ", " << p.y << " - " << j << " " << i << endl;
-	return Vector2D(j, i);
-}
-
 // class lưu trữ khi load ảnh lên
 class Texture2D
 {
@@ -218,183 +215,100 @@ class Block : public Texture2D {
 public:
 	int _type;
 	int _lvBlock;
+	Vector2D _index;
 
-	Block(SDL_Renderer* renderer, int type, int lvBlock = 0) : Texture2D(renderer, SettingProject::getPath(BLOCK, SettingProject::indexSkin + 1, type + 1)) {
+	Block(SDL_Renderer* renderer, Vector2D index, int type, int lvBlock = 0) : Texture2D(renderer, SettingProject::getPath(BLOCK, SettingProject::indexSkin + 1, type + 1)) {
 		_type = type;
 		_lvBlock = lvBlock;
+		_index = index;
 		transform.size = Vector2D(sizeBlock, sizeBlock);
 	}
 	void Start() override {
 
 	}
 	void Update(SDL_Event e, float deltaTime) override {
+		if (!isActive) return;
 		if (transform.scale.x >= 1) {
-			if(transform.position.x <= 35 || transform.position.x >= 380 
-			|| transform.position.y <= 140 || transform.position.y >= 850) return;
+			if(_index.x < 0 || _index.x >= sizeN
+			|| _index.y < 0 || _index.y >= sizeM) return;
 		}
+		transform.position = startIndex + _index * transform.scale.x * (sizeBlock - 8.7);
 		Texture2D::Update(e, deltaTime);
 	}
 };
 class Blocks {
+	int figures[7][4] = {
+		{1, 3, 5, 7}, // I
+		{2, 3, 4, 5}, // O
+		{3, 5, 4, 7}, // T
+		{2, 3, 5, 7}, // L
+		{3, 5, 7, 6}, // J
+		{3, 5, 4, 6}, // S
+		{2, 4, 5, 7} // Z
+	};
 public:
 	BLOCK_TYPE _typeBlock;
-	Vector2D _position =Vector2D(38,149.8);
-	Vector2D _index;
-	int _face;
 	vector<Block*> _listBlock;
 	float timeDelay;
 	float _timeDelay;
 	bool isClick = false;
+	bool isActive = true;
 	Blocks(SDL_Renderer* renderer, BLOCK_TYPE _type, Vector2D _i, Vector2D _s, float _time) {
 		_typeBlock = _type;
-		_index = _i;
 		timeDelay = _time;
 		_timeDelay = _time;
-
-		switch (_typeBlock) {
-		case BLOCK_I: {
-			_face = rand() % 2;
-			break;
-		}
-		case BLOCK_O: {
-			_face = rand() % 4;
-			break;
-		}
-		case BLOCK_T: {
-			_face = rand() % 4;
-			break;
-		}
-		case BLOCK_L: {
-			_face = rand() % 4;
-			break;
-		}
-		case BLOCK_J: {
-			_face = rand() % 4;
-			break;
-		}
-		case BLOCK_S: {
-			_face = rand() % 4;
-			break;
-		}
-		case BLOCK_Z: {
-			_face = rand() % 4;
-			break;
-		}
-		}
-
-		Block* b1 = new Block(gRenderer, (int)_typeBlock);
-		Block* b2 = new Block(gRenderer, (int)_typeBlock);
-		Block* b3 = new Block(gRenderer, (int)_typeBlock);
-		Block* b4 = new Block(gRenderer, (int)_typeBlock);
-
-		b1->SetScale(_s);
-		b2->SetScale(_s);
-		b3->SetScale(_s);
-		b4->SetScale(_s);
-
-		_listBlock.push_back(b1);
-		_listBlock.push_back(b2);
-		_listBlock.push_back(b3);
-		_listBlock.push_back(b4);
-
-		UpdateIndex();
-		//cout << ((Vector2D)_listBlock[0]->transform.scale * Vector2D(-1, 0) * (sizeBlock - 8.7)).x << endl;
+		Init(_i, _s);
 	}
-	void Flip(int** matrix) {
-		if (checkCanFlip(matrix)) {
-			_face = (_face + 1) % 4;
-			UpdateIndex();
+	~Blocks() {
+		for (int i = 0; i < 4; i++)
+			_listBlock[i]->Free();
+	}
+	void Init(Vector2D _i, Vector2D _s) {
+		for (int i = 0; i < 4; i++) {
+			Block* b1 = new Block(gRenderer, _i + Vector2D(figures[(int)_typeBlock][i] % 2, figures[(int)_typeBlock][i] / 2), (int)_typeBlock);
+			b1->SetScale(_s);
+			_listBlock.push_back(b1);
 		}
 	}
-	bool checkDown(int** matrix) {
-
-	}
-	bool checkUp(int** matrix) {
-
-	}
-	bool checkLeft(int** matrix) {
-
-	}
-	bool checkRight(int** matrix) {
-
-	}
-	bool checkCanFlip(int** matrix) {
+	bool Check(){
+		for (int i = 0; i < 4; i++) {
+			if (_listBlock[i]->_index.x < 0 || _listBlock[i]->_index.x >= sizeN
+				|| _listBlock[i]->_index.y < 0 || _listBlock[i]->_index.y >= sizeM) return false;
+			if (field[(int)_listBlock[i]->_index.y][(int)_listBlock[i]->_index.x] != 0) return false;
+		}
 		return true;
 	}
-	void UpdateIndex() {
-		Vector2D deltaK[7][4][4] = {
-			{
-				{ Vector2D(-1, 0), Vector2D(0, 0), Vector2D(1, 0), Vector2D(2, 0) },
-				{ Vector2D(0, -1), Vector2D(0, 0), Vector2D(0, 1), Vector2D(0, 2) },
-				{ Vector2D(1, 0), Vector2D(0, 0), Vector2D(-1, 0), Vector2D(-2, 0) },
-				{ Vector2D(0, -2), Vector2D(0, -1), Vector2D(0, 0), Vector2D(0, 1) }
-			}, // BLOCK_I
-			{
-				{ Vector2D(0, 0), Vector2D(1, 0), Vector2D(0, 1), Vector2D(1, 1) },
-				{ Vector2D(0, 0), Vector2D(1, 0), Vector2D(0, 1), Vector2D(1, 1) },
-				{ Vector2D(0, 0), Vector2D(1, 0), Vector2D(0, 1), Vector2D(1, 1) },
-				{ Vector2D(0, 0), Vector2D(1, 0), Vector2D(0, 1), Vector2D(1, 1) }
-			}, // BLOCK_O
-			{
-				{ Vector2D(-1, 0), Vector2D(0, 0), Vector2D(1, 0), Vector2D(0, -1) },
-				{ Vector2D(0, -1), Vector2D(0, 0), Vector2D(0, 1), Vector2D(1, 0) },
-				{ Vector2D(1, 0), Vector2D(0, 0), Vector2D(-1, 0), Vector2D(0, 1) },
-				{ Vector2D(0, 1), Vector2D(0, 0), Vector2D(0, -1), Vector2D(-1, 0) }
-			}, // BLOCK_T
-			{
-				{ Vector2D(0, 1), Vector2D(0, 0), Vector2D(1, 1), Vector2D(0, -1) },
-				{ Vector2D(1, 0), Vector2D(0, 0), Vector2D(-1, 1), Vector2D(-1, 0) },
-				{ Vector2D(-1, -1), Vector2D(0, 0), Vector2D(0, 1), Vector2D(0, -1) },
-				{ Vector2D(1, -1), Vector2D(0, 0), Vector2D(1, 0), Vector2D(-1, 0) }
-			}, // BLOCK_L
-			{
-				{ Vector2D(0, -1), Vector2D(0, 0), Vector2D(0, 1), Vector2D(1, -1) },
-				{ Vector2D(1, 1), Vector2D(0, 0), Vector2D(1, 0), Vector2D(-1, 0) },
-				{ Vector2D(0, 1), Vector2D(0, 0), Vector2D(0, -1), Vector2D(-1, 1) },
-				{ Vector2D(-1, -1), Vector2D(0, 0), Vector2D(1, 0), Vector2D(-1, 0) }
-			}, // BLOCK_J
-			{
-				{ Vector2D(-1, 1), Vector2D(0, 0), Vector2D(0, 1), Vector2D(1, 0) },
-				{ Vector2D(-1, -1), Vector2D(0, 0), Vector2D(0, 1), Vector2D(-1, 0) },
-				{ Vector2D(0, -1), Vector2D(0, 0), Vector2D(1, -1), Vector2D(-1, 0) },
-				{ Vector2D(0, -1), Vector2D(0, 0), Vector2D(1, 0), Vector2D(1, 1) }
-			}, // BLOCK_S
-			{
-				{ Vector2D(-1, 0), Vector2D(0, 0), Vector2D(1, 1), Vector2D(0, 1) },
-				{ Vector2D(0, -1), Vector2D(0, 0), Vector2D(-1, 1), Vector2D(-1, 0) },
-				{ Vector2D(1, 0), Vector2D(0, 0), Vector2D(0, -1), Vector2D(-1, -1) },
-				{ Vector2D(1, -1), Vector2D(0, 0), Vector2D(0, 1), Vector2D(1, 0) }
-			} // BLOCK_Z
-		};
+	void Rotate() {
+		Vector2D p = _listBlock[1]->_index;
 		for (int i = 0; i < 4; i++) {
-			cout << ((Vector2D)(deltaK[(int)_typeBlock][_face][i] + _index)).x << " " << ((Vector2D)(deltaK[(int)_typeBlock][_face][i] + _index)).y << endl;
-			_listBlock[i]->transform.position = _position + _listBlock[0]->transform.scale * (deltaK[(int)_typeBlock][_face][i] + _index) * (sizeBlock - 8.7);
+			Vector2D t = Vector2D(_listBlock[i]->_index.y - p.y, _listBlock[i]->_index.x - p.x);
+			_listBlock[i]->_index = Vector2D(p.x - t.x, p.y + t.y);
 		}
 	}
-	void Update(SDL_Event e, float deltaTime, int** matrix) {
+	void Update(SDL_Event e, float deltaTime) {
 		for (int i = 0; i < _listBlock.size(); i++) {
 			_listBlock[i]->Update(e, deltaTime);
 		}
 			
 		if (timeDelay < 0) return;
+		int dx = 0, dy = 0;
 		if (e.type == SDL_KEYDOWN && !isClick) {
 			isClick = true;
 			switch (e.key.keysym.sym) {
 			case SDLK_LEFT: {
-				Move(Vector2D(-1, 0));
+				dx = -1;
 				break;
 			}
 			case SDLK_RIGHT: {
-				Move(Vector2D(1, 0));
+				dx = 1;
 				break;
 			}
 			case SDLK_DOWN: {
-				Move(Vector2D(0, 1));
+				dy = 1;
 				break;
 			}
 			case SDLK_UP: {
-				//Move(Vector2D(0, -1));
-				Flip(matrix);
+				Rotate();
 				break;
 			}
 			}
@@ -407,15 +321,25 @@ public:
 		}
 		else {
 			_timeDelay = timeDelay;
-			Move(Vector2D(0, 1));
+			dy += 1;
 		}
+		Move(Vector2D(dx, dy));
 	}
 	void Move(Vector2D velocity) {
-		_index += velocity;
-		//cout << _position.x << " " << _position.y << endl;
-		UpdateIndex();
+		Vector2D b[4];
+		for (int i = 0; i < 4; i++) {
+			b[i] = _listBlock[i]->_index;
+			_listBlock[i]->_index += velocity;
+		}
+		if (!Check()) {
+			for (int i = 0; i < 4; i++) {
+				_listBlock[i]->_index = b[i];
+			}
+			isActive = false;
+		}
 	}
 };
+/*
 class BlockManager {
 public:
 	Texture2D* txtName;
@@ -454,7 +378,7 @@ public:
 	}
 	void InitBlock() {
 		float tiLe[] = { 20, 10, 15, 15, 15, 12,5, 12.5 };
-		int result;
+		int result = rand()%7;
 		for (int i = 0; i < 10; i++) {
 			float x = (rand() % 1000) / 10.0;
 			vector<int> listPoint;
@@ -466,23 +390,25 @@ public:
 			if (listPoint.size() > 0) {
 				result = listPoint[rand() % listPoint.size()];
 				if (result != pre1 && result != pre2) {
-					show = new Blocks(gRenderer, (BLOCK_TYPE)result, position, Vector2D(0.8, 0.8), -1);
-					pre2 = pre1;
-					pre1 = result;
 					break;
 				}
 			}
 		}
+		show = new Blocks(gRenderer, (BLOCK_TYPE)result, position, Vector2D(0.8, 0.8), -1);
+		pre2 = pre1;
+		pre1 = result;
 	}
 	int getValue(Vector2D p) {
 		Vector2D x = ConvertPositionToIndex(p);
 		return 0;
 	}
 };
+*/
 void Menu();
 void SettingMenu();
 void PlayGame();
 vector<Texture2D*> GetListType(int type, int n = 7);
+vector<Block*> GetMatrixShow();
 
 int main(int argc, char* args[])
 {
@@ -676,6 +602,16 @@ vector<Texture2D*> GetListType(int type, int n) {
 	}
 	return result;
 }
+vector<Block*> GetMatrixShow() {
+	vector<Block*> result;
+	for (int i = 0; i < sizeM; i++) 
+		for(int j=0; j<sizeN; j++){ // Vector2D index, int type, int lvBlock = 0
+			Block* x = new Block(gRenderer, Vector2D(j, i), 0);
+			//x->isActive = false;
+			result.push_back(x);
+		}
+	return result;
+}
 void SettingMenu() {
 	Texture2D BG(gRenderer, SettingProject::getPath(TYPE_IMG::BG));
 	BG.SetScale(Vector2D(SCREEN_WIDTH / BG.transform.size.x, SCREEN_HEIGHT / BG.transform.size.y));
@@ -806,16 +742,19 @@ void PlayGame() {
 	Score showScore(gRenderer, Vector2D(170, 50), Vector2D(1, 1));
 	showScore.SetValue(score);
 
-	Block* block1 = new Block(gRenderer, 0);
-	block1->SetScale(Vector2D(45/ block1->transform.size.x, 45/ block1->transform.size.y));
-	block1->transform.position = Vector2D(110, 295);
-
-	BlockManager* t = new BlockManager(gRenderer, Vector2D(500, 295));
+	//BlockManager* t = new BlockManager(gRenderer, Vector2D(500, 295));
 	Blocks* t2 = new Blocks(gRenderer, BLOCK_Z, Vector2D(0, 0), Vector2D(1, 1), 1);// 110, 295
-	//cout << block1->transform.scale.x * block1->transform.size.x;
 	SDL_Event e;
-	//int deltatime = 0;
+
 	gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
+	SDL_PollEvent(&e); // sự kiện 
+	BG.Update(e, deltaTime);
+	broad.Update(e, deltaTime);
+	btnHome.Update(e, deltaTime);
+	border.Update(e, deltaTime);
+	SDL_RenderPresent(gRenderer); // hiển thị ra màn hình
+
+	vector<Block*> matrixShow = GetMatrixShow();
 	while (true) {
 		deltaTime = (SDL_GetTicks() - gOldTime) / 1000.0; // tính bằng giây
 		//cout << deltaTime << endl;
@@ -829,11 +768,26 @@ void PlayGame() {
 
 		//t->getValue(Vector2D(e.button.x, e.button.y));
 		//cout << e.button.x << " " << e.button.y << endl;
-		t->Update(e, deltaTime);
-		t2->Update(e, deltaTime, NULL);
+		//t->Update(e, deltaTime);
+		t2->Update(e, deltaTime);
+
+		if (!t2->isActive) {
+			for (int i = 0; i < 4; i++) {
+				cout << (int)t2->_listBlock[i]->_index.x << " " << (int)t2->_listBlock[i]->_index.y << endl;
+				field[(int)t2->_listBlock[i]->_index.x][(int)t2->_listBlock[i]->_index.y] = (int)t2->_typeBlock;
+				matrixShow[int(t2->_listBlock[i]->_index.y * sizeN + t2->_listBlock[i]->_index.x)]->_type = t2->_typeBlock;
+				matrixShow[int(t2->_listBlock[i]->_index.y * sizeN + t2->_listBlock[i]->_index.x)]->LoadFromFile(SettingProject::getPath(BLOCK, SettingProject::indexSkin + 1, t2->_typeBlock + 1));
+			}
+			delete t2;
+			t2 = new Blocks(gRenderer, BLOCK_Z, Vector2D(0, 0), Vector2D(1, 1), 1);// 110, 295
+		}
+		for(int i=0; i<sizeM; i++)
+			for (int j = 0; j < sizeN; j++) {
+				if(field[i][j] != 0)
+					matrixShow[i * sizeN + j]->Update(e, deltaTime);
+			}
+
 		border.Update(e, deltaTime);
-
-
 		mouse.Update(e, deltaTime);
 
 		score++;
