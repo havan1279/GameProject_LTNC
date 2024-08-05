@@ -107,6 +107,7 @@ namespace SettingProject {
 	static std::string fileNames[10] = { "BG", "Tetris", "Broad", "Border", "iconMouse","", "", "", "Score", "Next"};
 	static int isPlayAudio = 1;
 	static int indexSkin = 0;
+	static BLOCK_TYPE nextBlockType = BLOCK_I;
 	static std::string getPath(TYPE_IMG type, int i = 0, int k = 0) {
 		switch (type) {
 		case BG: {

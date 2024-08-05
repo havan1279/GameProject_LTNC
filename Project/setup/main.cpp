@@ -26,7 +26,6 @@ float sizeBlock = 45;
 Vector2D startIndex = Vector2D(38, 149.8);
 
 int sizeM = 20, sizeN = 10;
-int field[20][10] = { 0 };
 
 // khởi tạo sdl
 bool InitSDL();
@@ -45,6 +44,7 @@ public:
 	Transform transform;
 	SDL_Texture* mTexture; // biến lưu thông tin
 	bool isActive;
+	Texture2D() { mRenderer = NULL; mTexture = NULL; }
 	Texture2D(SDL_Renderer* renderer, string path) { // khởi tạo
 		mRenderer = renderer;
 		if (!LoadFromFile(path)) {
@@ -110,6 +110,9 @@ public:
 		SDL_RenderCopyEx(mRenderer, mTexture, NULL, &r, angle, NULL, flip);
 	}
 };
+
+Texture2D* field[20][10];
+
 class Mouse :public Texture2D {
 public:
 	Mouse(SDL_Renderer* renderer, string path):Texture2D(renderer, path){}
@@ -265,24 +268,36 @@ public:
 	}
 	void Init(Vector2D _i, Vector2D _s) {
 		for (int i = 0; i < 4; i++) {
+			//cout << Vector2D(figures[(int)_typeBlock][i] % 2, figures[(int)_typeBlock][i] / 2).x << " " << Vector2D(figures[(int)_typeBlock][i] % 2, figures[(int)_typeBlock][i] / 2).y << endl;
 			Block* b1 = new Block(gRenderer, _i + Vector2D(figures[(int)_typeBlock][i] % 2, figures[(int)_typeBlock][i] / 2), (int)_typeBlock);
 			b1->SetScale(_s);
 			_listBlock.push_back(b1);
 		}
 	}
-	bool Check(){
+	int Check(){
 		for (int i = 0; i < 4; i++) {
 			if (_listBlock[i]->_index.x < 0 || _listBlock[i]->_index.x >= sizeN
-				|| _listBlock[i]->_index.y < 0 || _listBlock[i]->_index.y >= sizeM) return false;
-			if (field[(int)_listBlock[i]->_index.y][(int)_listBlock[i]->_index.x] != 0) return false;
+				|| _listBlock[i]->_index.y < -5 || _listBlock[i]->_index.y >= sizeM) return 0;
+			if (field[(int)_listBlock[i]->_index.y][(int)_listBlock[i]->_index.x] != NULL) return -1;
 		}
-		return true;
+		return 1;
 	}
 	void Rotate() {
 		Vector2D p = _listBlock[1]->_index;
+		Vector2D b[4];
 		for (int i = 0; i < 4; i++) {
+			b[i] = _listBlock[i]->_index;
 			Vector2D t = Vector2D(_listBlock[i]->_index.y - p.y, _listBlock[i]->_index.x - p.x);
 			_listBlock[i]->_index = Vector2D(p.x - t.x, p.y + t.y);
+		}
+		int t = Check();
+		if (t != 1) {
+			for (int i = 0; i < 4; i++) {
+				_listBlock[i]->_index = b[i];
+			}
+			if (t == -1) {
+				isActive = false;
+			}
 		}
 	}
 	void Update(SDL_Event e, float deltaTime) {
@@ -331,12 +346,19 @@ public:
 			b[i] = _listBlock[i]->_index;
 			_listBlock[i]->_index += velocity;
 		}
-		if (!Check()) {
+		int t = Check();
+		if (t != 1) {
 			for (int i = 0; i < 4; i++) {
 				_listBlock[i]->_index = b[i];
 			}
-			isActive = false;
+			if (t == -1) {
+				isActive = false;
+			}
 		}
+	}
+	void SpawnBlock() {
+		_typeBlock = SettingProject::nextBlockType;
+
 	}
 };
 /*
@@ -743,18 +765,12 @@ void PlayGame() {
 	showScore.SetValue(score);
 
 	//BlockManager* t = new BlockManager(gRenderer, Vector2D(500, 295));
-	Blocks* t2 = new Blocks(gRenderer, BLOCK_Z, Vector2D(0, 0), Vector2D(1, 1), 1);// 110, 295
+	Blocks* t2 = new Blocks(gRenderer, BLOCK_Z, Vector2D(5, -3), Vector2D(1, 1), 1);// 110, 295
 	SDL_Event e;
-
+	for (int i = 0; i < sizeM; i++)
+		for (int j = 0; j < sizeN; j++)
+			field[i][j] = NULL;
 	gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
-	SDL_PollEvent(&e); // sự kiện 
-	BG.Update(e, deltaTime);
-	broad.Update(e, deltaTime);
-	btnHome.Update(e, deltaTime);
-	border.Update(e, deltaTime);
-	SDL_RenderPresent(gRenderer); // hiển thị ra màn hình
-
-	vector<Block*> matrixShow = GetMatrixShow();
 	while (true) {
 		deltaTime = (SDL_GetTicks() - gOldTime) / 1000.0; // tính bằng giây
 		//cout << deltaTime << endl;
@@ -771,27 +787,27 @@ void PlayGame() {
 		//t->Update(e, deltaTime);
 		t2->Update(e, deltaTime);
 
-		if (!t2->isActive) {
-			for (int i = 0; i < 4; i++) {
-				cout << (int)t2->_listBlock[i]->_index.x << " " << (int)t2->_listBlock[i]->_index.y << endl;
-				field[(int)t2->_listBlock[i]->_index.x][(int)t2->_listBlock[i]->_index.y] = (int)t2->_typeBlock;
-				matrixShow[int(t2->_listBlock[i]->_index.y * sizeN + t2->_listBlock[i]->_index.x)]->_type = t2->_typeBlock;
-				matrixShow[int(t2->_listBlock[i]->_index.y * sizeN + t2->_listBlock[i]->_index.x)]->LoadFromFile(SettingProject::getPath(BLOCK, SettingProject::indexSkin + 1, t2->_typeBlock + 1));
-			}
-			delete t2;
-			t2 = new Blocks(gRenderer, BLOCK_Z, Vector2D(0, 0), Vector2D(1, 1), 1);// 110, 295
-		}
-		for(int i=0; i<sizeM; i++)
+		//if (!t2->isActive) {
+		//	for (int i = 0; i < 4; i++) {
+		//		cout << (int)t2->_listBlock[i]->_index.x << " " << (int)t2->_listBlock[i]->_index.y << endl;
+		//		//field[(int)t2->_listBlock[i]->_index.x][(int)t2->_listBlock[i]->_index.y] = (int)t2->_typeBlock;
+		//		//matrixShow[int(t2->_listBlock[i]->_index.y * sizeN + t2->_listBlock[i]->_index.x)]->_type = t2->_typeBlock;
+		//		//matrixShow[int(t2->_listBlock[i]->_index.y * sizeN + t2->_listBlock[i]->_index.x)]->LoadFromFile(SettingProject::getPath(BLOCK, SettingProject::indexSkin + 1, t2->_typeBlock + 1));
+		//	}
+		//	delete t2;
+		//	t2 = new Blocks(gRenderer, BLOCK_Z, Vector2D(0, 0), Vector2D(1, 1), 1);// 110, 295
+		//}
+		/*for(int i=0; i<sizeM; i++)
 			for (int j = 0; j < sizeN; j++) {
 				if(field[i][j] != 0)
 					matrixShow[i * sizeN + j]->Update(e, deltaTime);
-			}
+			}*/
 
 		border.Update(e, deltaTime);
 		mouse.Update(e, deltaTime);
 
-		score++;
-		showScore.SetValue(score);
+		//score++;
+		//showScore.SetValue(score);
 
 		if (btnHome.isChoose) {
 			Menu();
