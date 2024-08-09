@@ -112,6 +112,7 @@ public:
 };
 void DeleteRow(int index);
 void CheckMatrix();
+bool CheckGameOver();
 class Mouse :public Texture2D {
 public:
 	Mouse(SDL_Renderer* renderer, string path):Texture2D(renderer, path){}
@@ -191,10 +192,18 @@ public:
 		position = p;
 		scale = s;
 	}
-	void Update(SDL_Event e, float deltaTime){
-		txtName->Update(e, deltaTime);
+	void Update(SDL_Event e, float deltaTime, bool show = true){
+		if(show)
+			txtName->Update(e, deltaTime);
 		for (int i = 0; i < imgs.size(); i++)
 			imgs[i]->Update(e, deltaTime);
+	}
+	void SetScale(Vector2D x) {
+		scale = x;
+		for (int i = 0; i < imgs.size(); i++) {
+			imgs[i]->SetScale(x);
+			imgs[i]->transform.position = position + Vector2D(20, 0) * i * scale.x;
+		}
 	}
 	void SetValue(int score) {
 		if (score > 99999)
@@ -203,7 +212,7 @@ public:
 		string s_score = to_string(score);
 		for (int i = 0; i < s_score.size(); i++) {
 			Texture2D* t = new Texture2D(mRenderer, SettingProject::getPath(TYPE_IMG::NUMBER, s_score[i] - 48));
-			t->transform.position = position + Vector2D(25, 0) * i;
+			t->transform.position = position + Vector2D(25, 0) * i * scale.x;
 			imgs.push_back(t);
 		}
 	}
@@ -229,10 +238,13 @@ public:
 
 	}
 	void Update(SDL_Event e, float deltaTime) override {
+		if (SettingProject::endGame == 1) {
+			Texture2D::Update(e, deltaTime); 
+			return;
+		}
 		if (!isActive) return;
 		if (transform.scale.x >= 1) {
-			if(_index.x < 0 || _index.x >= sizeN
-			|| _index.y < 0) return;
+			if( _index.y < 0) return;
 		}
 		transform.position = startIndex + _index * transform.scale.x * (sizeBlock - 8.7);
 		Texture2D::Update(e, deltaTime);
@@ -302,7 +314,9 @@ public:
 		for (int i = 0; i < _listBlock.size(); i++) {
 			_listBlock[i]->Update(e, deltaTime);
 		}
-			
+		if (SettingProject::endGame == 1) {
+			return;
+		}
 		if (timeDelay < 0) return;
 		int dx = 0, dy = 0;
 		if (e.type == SDL_KEYDOWN && !isClick) {
@@ -334,7 +348,7 @@ public:
 		}
 		else {
 			_timeDelay = timeDelay;
-			dy += 1;
+			dy = 1;
 		}
 		Move(Vector2D(dx, dy));
 	}
@@ -350,14 +364,15 @@ public:
 				_listBlock[i]->_index = b[i];
 			}
 			if (t == -1 && velocity.x == 0) {
-				SpawnBlock();
+				isActive = false;
 			}
 		}
 	}
 	void SpawnBlock() {
 		_typeBlock = SettingProject::nextBlockType;
 		for (int i = 0; i < 4; i++) {
-			field[(int)_listBlock[i]->_index.y][(int)_listBlock[i]->_index.x] = _listBlock[i];
+			if((int)_listBlock[i]->_index.y >= 0 && (int)_listBlock[i]->_index.x >= 0)
+				field[(int)_listBlock[i]->_index.y][(int)_listBlock[i]->_index.x] = _listBlock[i];
 		}
 		CheckMatrix();
 		_listBlock.clear();
@@ -371,16 +386,11 @@ public:
 	SDL_Renderer* mRenderer;
 	Vector2D position;
 
-	int pre1, pre2;
-
 	BlockManager(SDL_Renderer* renderer, Vector2D p) {
 		mRenderer = renderer;
 		position = p;
 		txtName = new Texture2D(renderer, SettingProject::getPath(TYPE_IMG::NEXT));
-		txtName->transform.position = p - Vector2D(0, 70);
-
-		pre1 = -1;
-		pre2 = -1;
+		txtName->transform.position = startIndex + p*0.8 * (sizeBlock - 8.7) - Vector2D(0, 70);
 
 		InitBlock();
 	}
@@ -389,9 +399,9 @@ public:
 		show->Update(e, deltaTime);
 	}
 	void InitBlock() {
-		float tiLe[] = { 20, 10, 15, 15, 15, 12,5, 12.5 };
+		float tiLe[] = { 15, 15, 15, 15, 15, 12,5, 12.5 };
 		int result = rand()%7;
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 100; i++) {
 			float x = (rand() % 1000) / 10.0;
 			vector<int> listPoint;
 			for (int j = 0; j < 7; j++) {
@@ -401,20 +411,21 @@ public:
 			}
 			if (listPoint.size() > 0) {
 				result = listPoint[rand() % listPoint.size()];
-				if (result != pre1 && result != pre2) {
+				if (result != SettingProject::pre1 && result != SettingProject::pre2) {
 					break;
 				}
 			}
 		}
 		SettingProject::nextBlockType = (BLOCK_TYPE)result;
 		show = new Blocks(gRenderer, (BLOCK_TYPE)result, position, Vector2D(0.8, 0.8), -1);
-		pre2 = pre1;
-		pre1 = result;
+		SettingProject::pre2 = SettingProject::pre1;
+		SettingProject::pre1 = result;
 	}
 };
 void Menu();
 void SettingMenu();
 void PlayGame();
+void ClearGame();
 vector<Texture2D*> GetListType(int type, int n = 7);
 
 int main(int argc, char* args[])
@@ -425,9 +436,9 @@ int main(int argc, char* args[])
 		srand(time(0)); // cập nhật thời gian hiện tại để làm mới random
 		InitSoundEffect();
 		soundIds.push_back(Mix_PlayChannel(-1, sounds[0], -1));
-		//Menu();
+		Menu();
 		//SettingMenu();
-		PlayGame();
+		//PlayGame();
 	}
 	CloseSDL();
 	return 0;
@@ -517,6 +528,8 @@ SDL_Texture* LoadTextureFromFile(string path)
 void InitSoundEffect() {
 	sounds.push_back(Mix_LoadWAV("./Sounds/BG.wav")); /// phát nhạc
 	sounds.push_back(Mix_LoadWAV("./Sounds/Mouse.wav")); /// phát nhạc
+	sounds.push_back(Mix_LoadWAV("./Sounds/GameOver.wav")); /// phát nhạc
+	sounds.push_back(Mix_LoadWAV("./Sounds/Destroy.wav")); /// phát nhạc
 }
 void DisAudio() {
 	Mix_Pause(soundIds[0]);
@@ -548,7 +561,7 @@ void Menu() {
 	btnStart.SetScale(Vector2D(1, 1));
 	btnStart.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
-	Button btnAudio(gRenderer, TYPE_ICON::AUDIO_ON);
+	Button btnAudio(gRenderer, SettingProject::isPlayAudio == 1 ? TYPE_ICON::AUDIO_ON : TYPE_ICON::AUDIO_OFF);
 	btnAudio.SetScale(Vector2D(0.5f, 0.5f));
 	btnAudio.transform.position = Vector2D(SCREEN_WIDTH / 2 - 140, SCREEN_HEIGHT / 2 + 170);
 
@@ -611,8 +624,10 @@ void DeleteRow(int index) {
 				field[i][j]->_index += Vector2D(0, 1);
 		}
 	}
-	for (int j = 0; j < sizeN; j++)
+	for (int j = 0; j < sizeN; j++) {
 		field[0][j] = NULL;
+	}
+	PlayAudio(ID_AUDIO::AUDIO_DESTROY);
 }
 void CheckMatrix() {
 	for (int i = 0; i < sizeM; i++) {
@@ -627,6 +642,19 @@ void CheckMatrix() {
 			i--;
 		}
 	}
+}
+bool CheckGameOver() {
+	for (int i = 0; i < sizeN; i++)
+		if (field[0][i] != NULL) return true;
+	return false;
+}
+void ClearGame() {
+	for (int i = 0; i < sizeM; i++)
+		for (int j = 0; j < sizeN; j++) {
+			delete field[i][j];
+			field[i][j] = NULL;
+		}
+	SettingProject::endGame = 0;
 }
 vector<Texture2D*> GetListType(int type, int n) {
 	vector<Texture2D*> result;
@@ -768,9 +796,19 @@ void PlayGame() {
 	showScore.SetValue(score);
 
 	Blocks* t2 = new Blocks(gRenderer, BLOCK_Z, Vector2D(5, -3), Vector2D(1, 1), 1);// 110, 295
+	BlockManager t(gRenderer, Vector2D(15, 10));
 	SDL_Event e;
-	
+
+	Texture2D BGEnd(gRenderer, SettingProject::getPath(TYPE_IMG::END_GAME));
+	BGEnd.SetScale(Vector2D(2, 2));
+	BGEnd.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+
 	gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
+	int score_type[] = { 5, 3, 10, 12, 9, 7, 8 };
+
+	Button btnRepeat(gRenderer, TYPE_ICON::REPEAT);
+	btnRepeat.SetScale(Vector2D(0.3f, 0.3f));
+
 	while (true) {
 		deltaTime = (SDL_GetTicks() - gOldTime) / 1000.0; // tính bằng giây
 		//cout << deltaTime << endl;
@@ -782,6 +820,8 @@ void PlayGame() {
 		btnHome.Update(e, deltaTime);
 		showScore.Update(e, deltaTime);
 
+		if(SettingProject::endGame == 0)
+			t.Update(e, deltaTime);
 		t2->Update(e, deltaTime);
 
 		for (int i = 0; i < sizeM; i++)
@@ -789,19 +829,44 @@ void PlayGame() {
 				if (field[i][j] != NULL)
 					field[i][j]->Update(e, deltaTime);
 
+		if (!t2->isActive) {
+			score += score_type[t2->_typeBlock];
+			showScore.SetValue(score);
+			t2->SpawnBlock();
+			t.InitBlock();
+			t2->isActive = true;
+			if (CheckGameOver()) {
+				PlayAudio(ID_AUDIO::AUDIO_GAME_OVER);
+				SettingProject::endGame = 1;
+				showScore.position = Vector2D(400 - 10 * showScore.imgs.size(), 410);
+				showScore.SetScale(Vector2D(2 * Mathf::Clamp((1 - score / 5000.0), 0.7, 1), 2 * Mathf::Clamp((1 - score / 5000.0), 0.7, 1)));
+				btnRepeat.transform.position = Vector2D(220, 550);
+				btnHome.transform.position = Vector2D(320, 550);
+			}
+		}
+
 		border.Update(e, deltaTime);
+		if (SettingProject::endGame == 1) {
+			BGEnd.Update(e, 0);
+			showScore.Update(e, 0, false);
+			btnRepeat.Update(e, 0);
+			btnHome.Update(e, deltaTime);
+		}
 		mouse.Update(e, deltaTime);
 
-		//score++;
-		//showScore.SetValue(score);
-
 		if (btnHome.isChoose) {
+			ClearGame();
 			Menu();
+			return;
+		}
+		if (btnRepeat.isChoose) {
+			ClearGame();
+			PlayGame();
 			return;
 		}
 		
 		SDL_RenderPresent(gRenderer); // hiển thị ra màn hình
 		gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
-		SDL_Delay(20);
+		SDL_Delay(20*(1 - score/10000.0));
 	}
 }
