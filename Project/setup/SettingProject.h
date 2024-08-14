@@ -75,7 +75,8 @@ enum TYPE_IMG
 	NUMBER,
 	SCORE,
 	NEXT,
-	END_GAME
+	END_GAME,
+	TOP
 };
 enum TYPE_ICON {
 	REPEAT,
@@ -106,7 +107,7 @@ enum BLOCK_TYPE {
 namespace SettingProject {
 	static std::string pathImg = "./Images\\";
 	static std::string fileExtensions[2] = { ".png", ".jpg" };
-	static std::string fileNames[15] = { "BG", "Tetris", "Broad", "Border", "iconMouse","", "", "", "Score", "Next", "End"};
+	static std::string fileNames[15] = { "BG", "Tetris", "Broad", "Border", "iconMouse","", "", "", "Score", "Next", "EndGame", "Top"};
 	static int isPlayAudio = 1;
 	static int indexSkin = 0;
 	static BLOCK_TYPE nextBlockType = BLOCK_I;
@@ -117,6 +118,7 @@ namespace SettingProject {
 		case BG: {
 			return pathImg + fileNames[(int)type] + to_string(rand()%(4) + 1) + fileExtensions[1];
 		}
+		case TOP:
 		case END_GAME:
 		case SCORE:
 		case NEXT:

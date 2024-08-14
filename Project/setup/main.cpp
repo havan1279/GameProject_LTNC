@@ -427,7 +427,7 @@ void SettingMenu();
 void PlayGame();
 void ClearGame();
 vector<Texture2D*> GetListType(int type, int n = 7);
-
+vector<Score*> ReadScore(string filename, int score);
 int main(int argc, char* args[])
 {
 	if (InitSDL())
@@ -665,6 +665,35 @@ vector<Texture2D*> GetListType(int type, int n) {
 	}
 	return result;
 }
+vector<Score*> ReadScore(string filename, int score, Vector2D p, float h) {
+	vector<Score*> results;
+	vector<int> scores;
+	ifstream cin(filename);
+	int x;
+	bool check = false;
+	while (cin >> x) {
+		if (!check && x < score) {
+			check = true;
+			scores.push_back(score);
+		}
+		scores.push_back(x);
+	}
+	if (!check)
+		scores.push_back(score);
+	cin.close();
+
+	ofstream cout(filename);
+	for (int i = 0; i < scores.size(); i++) {
+		if (i < 5) {
+			Score* t = new Score(gRenderer, p + Vector2D(0, i * h), Vector2D(0.8, 0.8));
+			t->SetValue(scores[i]);
+			results.push_back(t);
+		}
+		cout << scores[i] << endl;
+	}
+	cout.close();
+	return results;
+}
 void SettingMenu() {
 	Texture2D BG(gRenderer, SettingProject::getPath(TYPE_IMG::BG));
 	BG.SetScale(Vector2D(SCREEN_WIDTH / BG.transform.size.x, SCREEN_HEIGHT / BG.transform.size.y));
@@ -795,13 +824,18 @@ void PlayGame() {
 	Score showScore(gRenderer, Vector2D(170, 50), Vector2D(1, 1));
 	showScore.SetValue(score);
 
-	Blocks* t2 = new Blocks(gRenderer, BLOCK_Z, Vector2D(5, -3), Vector2D(1, 1), 1);// 110, 295
 	BlockManager t(gRenderer, Vector2D(15, 10));
+	t.InitBlock();
+	Blocks* t2 = new Blocks(gRenderer, SettingProject::nextBlockType, Vector2D(5, -3), Vector2D(1, 1), 1);// 110, 295
+	t.InitBlock();
 	SDL_Event e;
 
 	Texture2D BGEnd(gRenderer, SettingProject::getPath(TYPE_IMG::END_GAME));
-	BGEnd.SetScale(Vector2D(2, 2));
+	BGEnd.SetScale(Vector2D(SCREEN_WIDTH / BGEnd.transform.size.x, SCREEN_HEIGHT / BGEnd.transform.size.y));
 	BGEnd.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+
+	vector<Score*> listScoreTop; 
+	vector<Score*> listTop;
 
 	gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
 	int score_type[] = { 5, 3, 10, 12, 9, 7, 8 };
@@ -838,10 +872,16 @@ void PlayGame() {
 			if (CheckGameOver()) {
 				PlayAudio(ID_AUDIO::AUDIO_GAME_OVER);
 				SettingProject::endGame = 1;
-				showScore.position = Vector2D(400 - 10 * showScore.imgs.size(), 410);
+				showScore.position = Vector2D(400 - 10 * showScore.imgs.size(), 110);
 				showScore.SetScale(Vector2D(2 * Mathf::Clamp((1 - score / 5000.0), 0.7, 1), 2 * Mathf::Clamp((1 - score / 5000.0), 0.7, 1)));
-				btnRepeat.transform.position = Vector2D(220, 550);
-				btnHome.transform.position = Vector2D(320, 550);
+				btnRepeat.transform.position = Vector2D(220, 750);
+				btnHome.transform.position = Vector2D(400, 750);
+				listScoreTop = ReadScore("./Score.txt", score, Vector2D(SCREEN_WIDTH / 2 + 120, SCREEN_HEIGHT / 2 + 20), 50);
+				for (int i = 0; i < listScoreTop.size(); i++) {
+					Score* t = new Score(gRenderer, Vector2D(SCREEN_WIDTH / 2 - 140, SCREEN_HEIGHT / 2 + 20) + Vector2D(0, i * 50), Vector2D(0.8, 0.8));
+					t->SetValue(i + 1);
+					listTop.push_back(t);
+				}
 			}
 		}
 
@@ -851,6 +891,10 @@ void PlayGame() {
 			showScore.Update(e, 0, false);
 			btnRepeat.Update(e, 0);
 			btnHome.Update(e, deltaTime);
+			for (int i = 0; i < listScoreTop.size(); i++) {
+				listScoreTop[i]->Update(e, deltaTime, false);
+				listTop[i]->Update(e, deltaTime, false);
+			}
 		}
 		mouse.Update(e, deltaTime);
 
