@@ -9,10 +9,10 @@
 #include <random>
 #include <ctime>
 #include"SettingProject.h"
-
-#define SCREEN_WIDTH 600
-#define SCREEN_HEIGHT 900
-
+#include"Texture2D.h"
+#include"Mouse.h"
+#include"Score.h"
+#include"Block.h"
 using namespace std;
 
 SDL_Window* gWindow = NULL; // cửa sổ game
@@ -36,94 +36,11 @@ SDL_Texture* LoadTextureFromFile(string path);
 void InitSoundEffect();
 void DisAudio();
 void PlayAudio(ID_AUDIO type);
-// class lưu trữ khi load ảnh lên
-class Texture2D
-{
-public:
-	SDL_Renderer* mRenderer; // màn hình hienr thị
-	Transform transform;
-	SDL_Texture* mTexture; // biến lưu thông tin
-	bool isActive;
-	Texture2D() { mRenderer = NULL; mTexture = NULL; }
-	Texture2D(SDL_Renderer* renderer, string path) { // khởi tạo
-		mRenderer = renderer;
-		if (!LoadFromFile(path)) {
-			cout << "Loi hinh anh " << path << endl;
-		}
-		isActive = true;
-	}
-	void Free() { // xóa bộ nhớ
-		if (mTexture != NULL)
-		{
-			SDL_DestroyTexture(mTexture);
-			mTexture = NULL;
-		}
-	}
-	~Texture2D() { // giải phóng bộ nhớ
-		Free();
-		mRenderer = NULL;
-	}
-	bool LoadFromFile(string path, int type=0) { // load ảnh
-		Free(); // giải phóng cũ
-		SDL_Surface* pSurface = IMG_Load(path.c_str());
 
-		if (pSurface != NULL)
-		{
-			SDL_SetColorKey(pSurface, SDL_TRUE, SDL_MapRGB(pSurface->format, 0, 0xFF, 0xFF)); // xóa nền
-			if (type == 0) {
-				transform.size.x = pSurface->w;
-				transform.size.y = pSurface->h;
-				transform.scale = Vector2D(1, 1);
-			}
-			mTexture = SDL_CreateTextureFromSurface(mRenderer, pSurface); 
-			if (mTexture == NULL)
-			{
-				cout << "Unable to create texture from surface. Error: " << SDL_GetError() << endl;
-			}
-			SDL_FreeSurface(pSurface);
-		}
-		else
-		{
-			cout << "Unable to create texture from surface. Error: " << IMG_GetError() << endl;
-		}
-		return mTexture != NULL;
-	}
-	void SetScale(Vector2D s) {
-		transform.scale = s;
-	}
-	// hiển thị đối tượng: vị trí, cách lấy đối xứng, góc xoay, phạm vi lấy, khung hiển thị
-	virtual void Start() {
-
-	}
-	virtual void Update(SDL_Event e, float deltaTime) {
-		if (!isActive) return;
-		this->Render();
-	}
-	void Render() { // load ảnh lên màn hình xử lý
-		SDL_SetRenderDrawColor(mRenderer, 0x00, 0x00, 0x00, 0x00);
-		// vẽ đối tượng lên màn hình xử lý, với khung vừa có, góc xoay angle, và cách lấy đối xứng flip
-		float sizeX = transform.size.x * abs(transform.scale.x);
-		float sizeY = transform.size.y * abs(transform.scale.y);
-		SDL_Rect r = {transform.position.x - sizeX/2, transform.position.y - sizeY/2, sizeX, sizeY};
-		SDL_RendererFlip flip = transform.scale.x < 0 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-		float angle = transform.rotation.x;
-		SDL_RenderCopyEx(mRenderer, mTexture, NULL, &r, angle, NULL, flip);
-	}
-};
 void DeleteRow(int index);
 void CheckMatrix();
 bool CheckGameOver();
-class Mouse :public Texture2D {
-public:
-	Mouse(SDL_Renderer* renderer, string path):Texture2D(renderer, path){}
-	void Start() override {
-		Texture2D::Start();
-	}
-	void Update(SDL_Event e, float deltaTime) override {
-		Texture2D::Update(e, deltaTime);
-		transform.position = Vector2D(Mathf::Clamp(e.button.x, 0, SCREEN_WIDTH), Mathf::Clamp(e.button.y, 0, SCREEN_HEIGHT));
-	}
-};
+
 class Button :public Texture2D {
 public:
 	TYPE_ICON _type;
@@ -175,79 +92,6 @@ public:
 		if (isHigh) return;
 		isHigh = true;
 		SetScale(Vector2D(transform.scale.x + 0.1f * (transform.scale.x > 0 ? 1 : -1), transform.scale.y + 0.1f * (transform.scale.y > 0 ? 1 : -1)));
-	}
-};
-class Score {
-public:
-	SDL_Renderer* mRenderer;
-	Texture2D* txtName;
-	vector<Texture2D*> imgs;
-	Vector2D position;
-	Vector2D scale;
-
-	Score(SDL_Renderer* renderer, Vector2D p, Vector2D s) {
-		txtName = new Texture2D(renderer, SettingProject::getPath(TYPE_IMG::SCORE));
-		txtName->transform.position = p - Vector2D(70, 0);
-		mRenderer = renderer;
-		position = p;
-		scale = s;
-	}
-	void Update(SDL_Event e, float deltaTime, bool show = true){
-		if(show)
-			txtName->Update(e, deltaTime);
-		for (int i = 0; i < imgs.size(); i++)
-			imgs[i]->Update(e, deltaTime);
-	}
-	void SetScale(Vector2D x) {
-		scale = x;
-		for (int i = 0; i < imgs.size(); i++) {
-			imgs[i]->SetScale(x);
-			imgs[i]->transform.position = position + Vector2D(20, 0) * i * scale.x;
-		}
-	}
-	void SetValue(int score) {
-		if (score > 99999)
-			score = 99999;
-		Destroy();
-		string s_score = to_string(score);
-		for (int i = 0; i < s_score.size(); i++) {
-			Texture2D* t = new Texture2D(mRenderer, SettingProject::getPath(TYPE_IMG::NUMBER, s_score[i] - 48));
-			t->transform.position = position + Vector2D(25, 0) * i * scale.x;
-			imgs.push_back(t);
-		}
-	}
-	void Destroy() {
-		for (int i = 0; i < imgs.size(); i++)
-			delete imgs[i];
-		imgs.clear();
-	}
-};
-class Block : public Texture2D {
-public:
-	int _type;
-	int _lvBlock;
-	Vector2D _index;
-
-	Block(SDL_Renderer* renderer, Vector2D index, int type, int lvBlock = 0) : Texture2D(renderer, SettingProject::getPath(BLOCK, SettingProject::indexSkin + 1, type + 1)) {
-		_type = type;
-		_lvBlock = lvBlock;
-		_index = index;
-		transform.size = Vector2D(sizeBlock, sizeBlock);
-	}
-	void Start() override {
-
-	}
-	void Update(SDL_Event e, float deltaTime) override {
-		if (SettingProject::endGame == 1) {
-			Texture2D::Update(e, deltaTime); 
-			return;
-		}
-		if (!isActive) return;
-		if (transform.scale.x >= 1) {
-			if( _index.y < 0) return;
-		}
-		transform.position = startIndex + _index * transform.scale.x * (sizeBlock - 8.7);
-		Texture2D::Update(e, deltaTime);
 	}
 };
 Block* field[20][10] = { NULL };

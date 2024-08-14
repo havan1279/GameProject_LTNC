@@ -1,1 +1,76 @@
-﻿  setup.vcxproj -> C:\Learn\GameProject_LTNC\Project\Debug\setup.exe
+﻿  Block.cpp
+C:\Learn\GameProject_LTNC\Project\setup\SettingProject.h(67,2): warning C4091: 'static ': ignored on left of 'Mathf' when no variable is declared
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(42,32): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(43,32): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,39): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,39): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,73): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,73): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,86): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,86): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,93): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,93): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Block.h(11,38): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\Block.h(31,78): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  main.cpp
+C:\Learn\GameProject_LTNC\Project\setup\SettingProject.h(67,2): warning C4091: 'static ': ignored on left of 'Mathf' when no variable is declared
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(42,32): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(43,32): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,39): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,39): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,73): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,73): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,86): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,86): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,93): warning C4838: conversion from 'float' to 'int' requires a narrowing conversion
+C:\Learn\GameProject_LTNC\Project\setup\Texture2D.h(75,93): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Mouse.h(11,54): warning C4244: 'argument': conversion from 'Sint32' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Mouse.h(11,97): warning C4244: 'argument': conversion from 'Sint32' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Score.h(21,21): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\Score.h(26,21): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\Score.h(28,63): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Score.h(36,21): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\Score.h(38,57): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\Score.h(43,21): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\Block.h(11,38): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\Block.h(31,78): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(26,36): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(156,112): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(156,79): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(187,21): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(226,21): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(226,17): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(266,48): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(266,65): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(278,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(293,76): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(293,71): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(309,13): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(409,20): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(448,43): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(536,29): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(536,24): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(559,20): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(561,74): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(561,69): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(612,43): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(622,21): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(627,22): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(633,22): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(643,23): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(659,23): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(720,43): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(748,39): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(749,72): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(749,53): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(749,120): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(749,101): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(753,23): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(754,111): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(754,132): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(754,127): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(767,22): warning C4018: '<': signed/unsigned mismatch
+C:\Learn\GameProject_LTNC\Project\setup\main.cpp(787,15): warning C4244: 'argument': conversion from 'double' to 'Uint32', possible loss of data
+  Generating Code...
+C:\Learn\GameProject_LTNC\Project\setup\SettingProject.h(145): warning C4715: 'SettingProject::getPath': not all control paths return a value
+  setup.vcxproj -> C:\Learn\GameProject_LTNC\Project\Debug\setup.exe

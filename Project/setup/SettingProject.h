@@ -4,6 +4,8 @@
 #include<string>
 
 using namespace std;
+#define SCREEN_WIDTH 600
+#define SCREEN_HEIGHT 900
 
 // class tọa độ 1 điểm
 class Vector2D
