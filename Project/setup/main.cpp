@@ -720,7 +720,7 @@ void PlayGame() {
 				showScore.SetScale(Vector2D(2 * Mathf::Clamp((1 - score / 5000.0), 0.7, 1), 2 * Mathf::Clamp((1 - score / 5000.0), 0.7, 1)));
 				btnRepeat.transform.position = Vector2D(220, 750);
 				btnHome.transform.position = Vector2D(400, 750);
-				listScoreTop = ReadScore("./Score.txt", score, Vector2D(SCREEN_WIDTH / 2 + 120, SCREEN_HEIGHT / 2 + 20), 50);
+				listScoreTop = ReadScore("./Resoure/Score.txt", score, Vector2D(SCREEN_WIDTH / 2 + 120, SCREEN_HEIGHT / 2 + 20), 50);
 				for (int i = 0; i < listScoreTop.size(); i++) {
 					Score* t = new Score(gRenderer, Vector2D(SCREEN_WIDTH / 2 - 140, SCREEN_HEIGHT / 2 + 20) + Vector2D(0, i * 50), Vector2D(0.8, 0.8));
 					t->SetValue(i + 1);

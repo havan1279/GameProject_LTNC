@@ -60,10 +60,6 @@ public:
 			return max;
 		return value;
 	}
-	static float Distacne(Vector2D x, Vector2D y) {
-		Vector2D d = x - y;
-		return sqrt(d.x * d.x + d.y * d.y);
-	}
 };
 enum TYPE_IMG
 {
