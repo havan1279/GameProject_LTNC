@@ -70,7 +70,7 @@ public:
 	void Render() { // load ảnh lên màn hình xử lý
 		SDL_SetRenderDrawColor(mRenderer, 0x00, 0x00, 0x00, 0x00);
 		// vẽ đối tượng lên màn hình xử lý, với khung vừa có, góc xoay angle, và cách lấy đối xứng flip
-		float sizeX = transform.size.x * abs(transform.scale.x);
+		float sizeX = transform.size.x * abs(transform.scale.x); // = kích thước gốc* độ phóng đại (có thể âm nên phải lấy ||
 		float sizeY = transform.size.y * abs(transform.scale.y);
 		SDL_Rect r = { transform.position.x - sizeX / 2, transform.position.y - sizeY / 2, sizeX, sizeY };
 		SDL_RendererFlip flip = transform.scale.x < 0 ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
