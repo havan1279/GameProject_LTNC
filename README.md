@@ -26,8 +26,8 @@
 
 # Màn hình game
 
-Màn hình gồm 3 chức năng:
 ![image](Readme_Pictures/Menu.png)
+Màn hình gồm 3 chức năng:
 
 - Chơi game: Khi người chơi click chọn chuyển sang màn hình chơi game
 
