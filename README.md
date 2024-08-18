@@ -229,3 +229,9 @@ Màn hình gồm 3 chức năng:
   - Itcho: https://moxica.itch.io/tetrominoes
 - Nguồn âm thanh:
   - Tiengdong.com https://tiengdong.com/tieng-no-lon
+
+# Hướng phát triển
+
+- Tối ưu hoá game hơn
+- Phát triển thêm chức năng battle, 2 người chơi
+- Phát triển thêm các biến thể mới với luật chơi khác biệt: thay đổi cách di chuyển của các khối gạch, giới thiệu các khối gạch có hình dạng và chức năng đặc biệt
