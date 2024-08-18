@@ -47,10 +47,12 @@ Màn hình gồm 3 chức năng:
 
 1. Người chơi có thể xoay và di chuyển các khối bằng các phím mũi tên: sang trái/phải/xuống và phím mũi tên lên để xoay khối
 2. Xếp các khối để tích lũy điểm số
-3. Khi các khối lấp đầy một hàng sẽ bị phá hủy và các khối bên trên sẽ rơi xuống để lấp đầy hàng trống. Cố gắng xếp được nhiều khối nhất có thể trước khi có khối va chạm biên trên
-4. Khi điểm càng cao tốc độ các khối sẽ rơi càng nhanh
-5. Khi khối quá cao bạn sẽ thua cuộc
-6. Thay đổi các skin để trông đẹp mắt hơn
+3. Màn hình chơi game sẽ hiển thị số điểm đạt được và dự đoán khối tiếp theo
+4. Khi các khối lấp đầy một hàng sẽ bị phá hủy và các khối bên trên sẽ rơi xuống để lấp đầy hàng trống. Cố gắng xếp được nhiều khối nhất có thể trước khi có khối va chạm biên trên
+5. Khi điểm càng cao tốc độ các khối sẽ rơi càng nhanh
+6. Khi khối chậm biên trên trò chơi sẽ kết thúc và hiển thị màn hình end game
+7. Màn hình end game sẽ hiển thị điểm số cuối cùng, danh sách bảng xếp hạng và chức năng chơi lại hoăc thoát
+8. Có thể thay đổi các skin để trông đẹp mắt hơn
 
 # Cấu Trúc Thư Mục
 
@@ -176,7 +178,7 @@ Màn hình gồm 3 chức năng:
   float tiLe[] = { 50, 75, 75, 75, 75, 50, 60 };
   - Trong đó lần lượt là các khối: I, O, T, L, J, S, Z
 - B2: Tạo giá trị ngẫu nhiên - Tạo giá trị mặc định: result giá trị này sẽ được sử dụng khi quá trình random không - Thực hiện random tối đa 100 lần - random 1 giá trị ngẫu nhiên từ 0-100, và thực hiện so sánh với tỉ lệ sinh các khối => ta được danh sách các khối thỏa mãn - Tiếp tục random trong danh sách các khối đồng thời kiểm tra với 2 khối trước đó, nếu khác thì kết thúc và cập nhật thông tin dữ liệu cho lần sinh khối tiếp theo
-  => Thuật toán đảm bảo tỉ lệ 3 khối liên tiếp khác nhau cao, và các loại khối có tỉ lệ rơi nhiều hay ít.
+  => Thuật toán đảm bảo tỉ lệ 3 khối liên tiếp khác nhau cao, và các loại khối có tỉ lệ rơi nhiều hay ít, giúp tăng tính hấp dẫn cho game.
 
 ## Thuật toán tăng tốc độ khi điểm tăng
 
@@ -197,15 +199,15 @@ Màn hình gồm 3 chức năng:
 - Sử dụng 1 biến tĩnh (file SettingProject.h) lưu trữ vị trí skin mà người dùng chọn, khi load ảnh tùy vào vị trí mà ta sẽ lấy đường dẫn ảnh tương ứng theo công thức: "./Images/" + to_string( (index + 1)\*10 + (vị trí khối tương ứng + 1)) + ".png"
 - VD đối với khối I vị trí index 0:
   - Khi người dùng chọn skin 1: đường dãn = "./Images/" + to_string((1+1)\*10 + (0 + 1)) + ".png" = "./Images/21.png"
-  - Cho phép lựa chọn và thay đổi skin khối
+  - Cho phép lựa chọn và thay đổi skin khối theo sở thích cá nhân
 
-# Hiển thị icon chuột thay cho chuột mặc định
+## Hiển thị icon chuột thay cho chuột mặc định
 
 - Sử dụng hàm SDL_ShowCursor(SDL_DISABLE); để ẩn chuột máy tính
 - Thực hiện cập nhật vị trí chuột trùng với vị trí con trỏ transform.position = Vector2D(Mathf::Clamp(e.button.x, 0, SCREEN_WIDTH), Mathf::Clamp(e.button.y, 0, SCREEN_HEIGHT));
   - Trong đó hàm Clamp cho phép giới hạn tọa độ hiển thị.
 
-# Tạo hiệu ứng cho Button
+## Tạo hiệu ứng cho Button
 
 - Khi chuột di chuyển tới tạo hiệu ứng phóng to
 - Khi chuột di chuyển ra ngoài vùng tạo hiệu ứng thu nhỏ kích thước về kích thước ban đầu
@@ -214,11 +216,12 @@ Màn hình gồm 3 chức năng:
 
 # Công Nghệ Sử Dụng
 
-- Visual Studio 2022
-- C++
-- Git
-
-# Tài liệu và nguồn hình ảnh, âm thanh
+- Công cụ phát triển: Visual Studio 2022
+- Ngôn ngữ phát triển: C++
+- Trình quản lý: Github
+- Thư viện đồ hoạ: SDL2
+  
+# Nguồn tham khảo
 
 - Tài liệu: https://www.youtube.com/watch?v=zH_omFPqMO4
 - Nguồn hình ảnh:
