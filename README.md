@@ -27,7 +27,7 @@
 1. Clone repo về máy tính của bạn: git clone https://github.com/havan1279/GameProject_LTNC.git
 2. Chạy trực tiếp file setup.exe trong mục Debug
 
-# Màn hình game
+# Menu game
 
 ![image](Readme_Pictures/Menu.png)
 
