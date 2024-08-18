@@ -199,7 +199,7 @@ Màn hình gồm 3 chức năng:
 - Sử dụng 1 biến tĩnh (file SettingProject.h) lưu trữ vị trí skin mà người dùng chọn, khi load ảnh tùy vào vị trí mà ta sẽ lấy đường dẫn ảnh tương ứng theo công thức: "./Images/" + to_string( (index + 1)\*10 + (vị trí khối tương ứng + 1)) + ".png"
 - VD đối với khối I vị trí index 0:
   - Khi người dùng chọn skin 1: đường dãn = "./Images/" + to_string((1+1)\*10 + (0 + 1)) + ".png" = "./Images/21.png"
-  - Cho phép lựa chọn và thay đổi skin khối theo sở thích cá nhân
+- Cho phép lựa chọn và thay đổi skin khối theo sở thích cá nhân
 
 ## Hiển thị icon chuột thay cho chuột mặc định
 
