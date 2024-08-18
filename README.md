@@ -1,9 +1,12 @@
-# Tên Dự Án
+# Tetris
 
-- Game Tetris trên nền tảng C++ sử dụng thư viện SDL2
-- Link demo: https://drive.google.com/file/d/1CrT21Vp2gaFfIfAMVu7r-MigjuV5IbhK/view?usp=sharing
+- Sinh viên: Nguyễn Vân Hà
+- MSSV: 20020222
+  
+# Giới thiệu game
 
-# Cài đặt và Chạy Dự Án
+- Tetris hay Xếp Hình (1984), trò chơi có 7 loại Khối Hình (Tetromino) I (thẳng đứng), J, L, O (vuông), S, T, Z ứng với 7 màu khác nhau. Mỗi khối sẽ có 1 số điểm, khi xảy ra va chạm giữa các khối hoặc va chạm với biên dưới, sẽ được cộng điểm tương ứng. Ta sẽ điều khiển và xoay các khối để lấy đầy các hàng và phá huỷ chúng. Mục đích sẽ là xếp được nhiều khối nhất trước khi chạm biên trên.
+- Link video giới thiệu game: https://drive.google.com/file/d/1CrT21Vp2gaFfIfAMVu7r-MigjuV5IbhK/view?usp=sharing
 
 ## Yêu cầu hệ thống
 
@@ -36,6 +39,18 @@ Màn hình gồm 3 chức năng:
   ![image](Readme_Pictures/Audio.png)
 - Thay đổi trang phục khối: Khi click vào nút chuyển sang màn hình lựa chọn skin
   ![image](Readme_Pictures/Select.png)
+
+# Cách chơi
+
+- Có 7 loại khối mỗi khối được tạo thành từ các màu giống nhau.
+  ![image](Readme_Pictures/Block.png)
+
+1. Người chơi có thể xoay và di chuyển các khối bằng các phím mũi tên: sang trái/phải/xuống và phím mũi tên lên để xoay khối
+2. Xếp các khối để tích lũy điểm số
+3. Khi các khối lấp đầy một hàng sẽ bị phá hủy và các khối bên trên sẽ rơi xuống để lấp đầy hàng trống. Cố gắng xếp được nhiều khối nhất có thể trước khi có khối va chạm biên trên
+4. Khi điểm càng cao tốc độ các khối sẽ rơi càng nhanh
+5. Khi khối quá cao bạn sẽ thua cuộc
+6. Thay đổi các skin để trông đẹp mắt hơn
 
 # Cấu Trúc Thư Mục
 
@@ -152,8 +167,10 @@ Màn hình gồm 3 chức năng:
   - void ClearGame(): Làm mới dữ liệu màn chơi
   - vector<Texture2D\*> GetListType(int type, int n = 7): Trả về danh sách các ô màu
   - vector<Score\*> ReadScore(string filename, int score): Trả về danh sách các điểm
+ 
+# Một số tính năng phát triển thêm
 
-# Thuật toán xử lý sinh khối
+## Thuật toán xử lý sinh khối
 
 - B1: Tạo mảng tỉ lệ rơi cho các khối
   float tiLe[] = { 50, 75, 75, 75, 75, 50, 60 };
@@ -161,25 +178,26 @@ Màn hình gồm 3 chức năng:
 - B2: Tạo giá trị ngẫu nhiên - Tạo giá trị mặc định: result giá trị này sẽ được sử dụng khi quá trình random không - Thực hiện random tối đa 100 lần - random 1 giá trị ngẫu nhiên từ 0-100, và thực hiện so sánh với tỉ lệ sinh các khối => ta được danh sách các khối thỏa mãn - Tiếp tục random trong danh sách các khối đồng thời kiểm tra với 2 khối trước đó, nếu khác thì kết thúc và cập nhật thông tin dữ liệu cho lần sinh khối tiếp theo
   => Thuật toán đảm bảo tỉ lệ 3 khối liên tiếp khác nhau cao, và các loại khối có tỉ lệ rơi nhiều hay ít.
 
-# Thuật toán tăng tốc độ khi điểm tăng
+## Thuật toán tăng tốc độ khi điểm tăng
 
 - Với tốc độ delay mỗi frame là 30ms, ta thực hiện giảm thời gian delay thông qua công thức:
   thời gian delay = thời gian delay mặc định \* (1 - score/150);
   với giá trị 1 - score/150 luôn được giới hạn trong phạm vi 0->1
   => Điều này giúp tốc độ game nhanh hơn và giúp người chơi cảm giác độ khó tăng dần.
 
-# Thuật toán hiển thị bảng xếp hạng
+## Thuật toán hiển thị bảng xếp hạng
 
 - Hàm ReadScore truyền vào đường dẫn file dữ liệu và số diểm người chơi đạt được và trả về danh sách các đối tượng hiển thị điểm (vector Score)
 - Các bước thực hiện:
   - Tạo một vector lưu dữ điểm khi đọc từ file (file điểm có điểm số được sắp sếp giảm dần), khi đọc đến phần tử nào ta so sánh với số điểm hiện tại nếu điểm hiện tại lớn hơn diểm đọc từ file tiến hành chèn điểm hiện tại vào vị trí trước điểm đọc từ file và đánh dấu, ngược lại khi dọc hết dữ liệu từ file mà chưa chèn dữ liệu tiến hành chèn vào cuối danh sách.
   - Duyệt vòng lặp qua các đối tượng trong danh sách vừa có tiến hành cập nhật lại dữ liệu trong file và tạo đối tượng score tương ứng và kết thúc.
 
-# Xử lý quản lý skin
+## Xử lý quản lý skin
 
 - Sử dụng 1 biến tĩnh (file SettingProject.h) lưu trữ vị trí skin mà người dùng chọn, khi load ảnh tùy vào vị trí mà ta sẽ lấy đường dẫn ảnh tương ứng theo công thức: "./Images/" + to_string( (index + 1)\*10 + (vị trí khối tương ứng + 1)) + ".png"
 - VD đối với khối I vị trí index 0:
   - Khi người dùng chọn skin 1: đường dãn = "./Images/" + to_string((1+1)\*10 + (0 + 1)) + ".png" = "./Images/21.png"
+  - Cho phép lựa chọn và thay đổi skin khối
 
 # Hiển thị icon chuột thay cho chuột mặc định
 
@@ -193,16 +211,6 @@ Màn hình gồm 3 chức năng:
 - Khi chuột di chuyển ra ngoài vùng tạo hiệu ứng thu nhỏ kích thước về kích thước ban đầu
 - Khi click chuột phát âm thanh đồng thời đánh dấu Button đã được click
 
-# Hướng Dẫn Sử Dụng
-
-- Có 7 loại khối mỗi khối được tạo thành từ các màu giống nhau.
-  ![image](Readme_Pictures/Block.png)
-
-1. Người chơi có thể di chuyển các khối bằng các phím mũi tên: sang trái/phải/xuống và phím mũi tên lên để xoay khối
-2. Xếp các khối để tích lũy điểm số
-3. Khi các khối lấp đầy một hàng sẽ bị phá hủy và các khối bên trên sẽ rơi xuống để lấp đầy hàng trống.
-4. Khi khối quá cao bạn sẽ thua cuộc
-5. Thay đổi các skin để trông đẹp mắt hơn
 
 # Công Nghệ Sử Dụng
 
