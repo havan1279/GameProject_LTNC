@@ -11,10 +11,27 @@
 
 ### Hướng dẫn cài đặt
 
+- Cách 1: Chạy project thông qua Visual Studio 2022
+
 1. Clone repo về máy tính của bạn: git clone https://github.com/havan1279/GameProject_LTNC.git
 2. Mở project bằng Visual Studio 2022
 3. Mở file `main.cpp`
 4. Thực hiện chạy project
+
+- Cách 2: Chạy trực tiếp game thông qua file .exe
+
+1. Clone repo về máy tính của bạn: git clone https://github.com/havan1279/GameProject_LTNC.git
+2. Chạy trực tiếp file setup.exe trong mục Debug
+
+## Màn hình game
+
+Màn hình gồm 3 chức năng:
+![example](anh.png)
+
+- Chơi game: Khi người chơi click chọn chuyển sang màn hình chơi game
+
+- Bật/tắt nhạc: Khi click vào nút cho phép bật/tắt nhạc
+- Thay đổi trang phục khối: Khi click vào nút chuyển sang màn hình lựa chọn skin
 
 ## Cấu Trúc Thư Mục
 
@@ -134,13 +151,10 @@
 
 ## Hướng Dẫn Sử Dụng
 
-1. Người chơi có thể di chuyển nhân vật bằng các phím mũi tên hoặc WASD.
-2. Nhấn phím Space để nhảy.
-3. Ăn các viên kẹo để tích lũy điểm số.
-4. Tránh các chướng ngại vật để không bị mất mạng.
-5. Hoàn thành các cấp độ để đi đến cấp độ tiếp theo.
-
-![Game Screenshot](Images/screenshot.png)
+1. Người chơi có thể di chuyển các khối bằng các phím mũi tên: sang trái/phải/xuống và phím mũi tên lên để xoay khối
+2. Xếp các khối để tích lũy điểm số
+3. Khi khối quá cao bạn sẽ thua cuộc
+4. Thay đổi các skin để trông đẹp mắt hơn
 
 ## Công Nghệ Sử Dụng
 

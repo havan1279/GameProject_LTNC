@@ -11,7 +11,7 @@ public:
 	SDL_Renderer* mRenderer; // màn hình hienr thị
 	Transform transform;
 	SDL_Texture* mTexture; // biến lưu thông tin
-	bool isActive;
+	bool isActive; // trạng thái hiển thị
 	Texture2D() { mRenderer = NULL; mTexture = NULL; }
 	Texture2D(SDL_Renderer* renderer, string path) { // khởi tạo
 		mRenderer = renderer;

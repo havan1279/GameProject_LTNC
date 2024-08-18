@@ -33,7 +33,7 @@ bool InitSDL();
 void CloseSDL();
 // load ảnh
 SDL_Texture* LoadTextureFromFile(string path);
-void InitSoundEffect();
+void InitSoundEffect(); // khởi 
 void DisAudio();
 void PlayAudio(ID_AUDIO type);
 
@@ -96,7 +96,7 @@ public:
 };
 Block* field[20][10] = { NULL };
 class Blocks {
-	int figures[7][4] = {
+	int figures[7][4] = { // tjoa độ từng khối
 		{1, 3, 5, 7}, // I
 		{2, 3, 4, 5}, // O
 		{3, 5, 4, 7}, // T
@@ -129,26 +129,26 @@ public:
 			_listBlock.push_back(b1);
 		}
 	}
-	int Check(){
+	int Check(){ // kiểm tra khối 
 		for (int i = 0; i < 4; i++) {
 			if (_listBlock[i]->_index.x < 0 || _listBlock[i]->_index.x >= sizeN
-				|| _listBlock[i]->_index.y < -5) return 0;
+				|| _listBlock[i]->_index.y < -5) return 0; // nếu nằm ngoài ma trận
 			if (_listBlock[i]->_index.y >= 0 && field[(int)_listBlock[i]->_index.y][(int)_listBlock[i]->_index.x] != NULL || _listBlock[i]->_index.y >= sizeM) {
 				cout << (int)_listBlock[i]->_index.y << " " << (int)_listBlock[i]->_index.x << endl; 
-				return -1; }
+				return -1; } // nếu va chạm với các khối trong ma trận
 		}
-		return 1;
+		return 1; // không va chạm
 	}
 	void Rotate() {
 		Vector2D p = _listBlock[1]->_index;
 		Vector2D b[4];
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) { // thực hiện thay đổi
 			b[i] = _listBlock[i]->_index;
 			Vector2D t = Vector2D(_listBlock[i]->_index.y - p.y, _listBlock[i]->_index.x - p.x);
 			_listBlock[i]->_index = Vector2D(p.x - t.x, p.y + t.y);
 		}
 		int t = Check();
-		if (t != 1) {
+		if (t != 1) { // kiểm tra va chạm, nếu có thì trở lại tọa độ ban đầu
 			for (int i = 0; i < 4; i++) {
 				_listBlock[i]->_index = b[i];
 			}
@@ -196,29 +196,29 @@ public:
 		}
 		Move(Vector2D(dx, dy));
 	}
-	void Move(Vector2D velocity) {
+	void Move(Vector2D velocity) { // dịch chuyển khối
 		Vector2D b[4];
 		for (int i = 0; i < 4; i++) {
 			b[i] = _listBlock[i]->_index;
 			_listBlock[i]->_index += velocity;
 		}
 		int t = Check();
-		if (t != 1) {
+		if (t != 1) { // kiểm tra va chạm
 			for (int i = 0; i < 4; i++) {
 				_listBlock[i]->_index = b[i];
 			}
-			if (t == -1 && velocity.x == 0) {
+			if (t == -1 && velocity.x == 0) { // v chạm với khối trong ma trận => tắt trạng thái hoạt động
 				isActive = false;
 			}
 		}
 	}
-	void SpawnBlock() {
+	void SpawnBlock() { // tạo khối mới
 		_typeBlock = SettingProject::nextBlockType;
 		for (int i = 0; i < 4; i++) {
 			if((int)_listBlock[i]->_index.y >= 0 && (int)_listBlock[i]->_index.x >= 0)
 				field[(int)_listBlock[i]->_index.y][(int)_listBlock[i]->_index.x] = _listBlock[i];
 		}
-		CheckMatrix();
+		CheckMatrix(); // kiểm tra ma trận
 		_listBlock.clear();
 		Init(Vector2D(5, -3), Vector2D(1, 1));
 	}
@@ -236,32 +236,33 @@ public:
 		txtName = new Texture2D(renderer, SettingProject::getPath(TYPE_IMG::NEXT));
 		txtName->transform.position = startIndex + p*0.8 * (sizeBlock - 8.7) - Vector2D(0, 70);
 
-		InitBlock();
+		InitBlock(); 
 	}
 	void Update(SDL_Event e, float deltaTime) {
 		txtName->Update(e, deltaTime);
 		show->Update(e, deltaTime);
 	}
 	void InitBlock() {
-		float tiLe[] = { 15, 15, 15, 15, 15, 12,5, 12.5 };
+		float tiLe[] = { 50, 75, 75, 75, 75, 50, 60 }; // tạo tỉ lệ rơi
 		int result = rand()%7;
-		for (int i = 0; i < 100; i++) {
-			float x = (rand() % 1000) / 10.0;
+		for (int i = 0; i < 100; i++) { // random 100 lần để tìm khối mới
+			float x = (rand() % 100); 
 			vector<int> listPoint;
 			for (int j = 0; j < 7; j++) {
-				if (x < tiLe[j]) {
+				if (x < tiLe[j]) { // thêm các khối thỏa mãn vào danh sách
 					listPoint.push_back(j);
 				}
 			}
-			if (listPoint.size() > 0) {
-				result = listPoint[rand() % listPoint.size()];
-				if (result != SettingProject::pre1 && result != SettingProject::pre2) {
+			if (listPoint.size() > 0) { // nếu danh sách không trống
+				int result2 = listPoint[rand() % listPoint.size()];
+				if (result2 != SettingProject::pre1 && result2 != SettingProject::pre2) { // nếu khác 2 khối trước thì kết thúc
+					result = result2;
 					break;
 				}
 			}
 		}
-		SettingProject::nextBlockType = (BLOCK_TYPE)result;
-		show = new Blocks(gRenderer, (BLOCK_TYPE)result, position, Vector2D(0.8, 0.8), -1);
+		SettingProject::nextBlockType = (BLOCK_TYPE)result; // cập nhật
+		show = new Blocks(gRenderer, (BLOCK_TYPE)result, position, Vector2D(0.8, 0.8), -1); // hiển thị khối tiếp theo
 		SettingProject::pre2 = SettingProject::pre1;
 		SettingProject::pre1 = result;
 	}
@@ -380,7 +381,7 @@ void DisAudio() {
 	for (int i = 1; i < soundIds.size(); i++)
 		Mix_HaltChannel(soundIds[i]);
 }
-void PlayAudio(ID_AUDIO type) {
+void PlayAudio(ID_AUDIO type) { // phát âm thanh
 	if (SettingProject::isPlayAudio == -1) return;
 	if (type == 0) {
 		Mix_Resume(soundIds[0]);
@@ -389,6 +390,7 @@ void PlayAudio(ID_AUDIO type) {
 		soundIds.push_back(Mix_PlayChannel(-1, sounds[(int)type], type == 0 ? -1 : 0));
 }
 void Menu() {
+	// khởi tạo
 	Texture2D BG(gRenderer, SettingProject::getPath(TYPE_IMG::BG));
 	BG.SetScale(Vector2D(SCREEN_WIDTH / BG.transform.size.x, SCREEN_HEIGHT / BG.transform.size.y));
 	BG.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
@@ -418,6 +420,7 @@ void Menu() {
 	while (true) {
 		deltaTime = (SDL_GetTicks() - gOldTime) / 1000.0; // tính bằng giây
 		//cout << deltaTime << endl;
+		// cập nhật
 		SDL_PollEvent(&e); // sự kiện 
 		SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0x00);
 		SDL_RenderClear(gRenderer); // xóa dữ liệu cũ
@@ -432,7 +435,7 @@ void Menu() {
 			PlayGame();
 			return;
 		}
-		if (btnAudio.isChoose) {
+		if (btnAudio.isChoose) { // kiểm tra nút bấm
 			btnAudio.isChoose = false;
 			SettingProject::isPlayAudio *= -1;
 			if (SettingProject::isPlayAudio == 1) {
@@ -509,13 +512,13 @@ vector<Texture2D*> GetListType(int type, int n) {
 	}
 	return result;
 }
-vector<Score*> ReadScore(string filename, int score, Vector2D p, float h) {
+vector<Score*> ReadScore(string filename, int score, Vector2D p, float h) { // đọc file
 	vector<Score*> results;
 	vector<int> scores;
 	ifstream cin(filename);
 	int x;
 	bool check = false;
-	while (cin >> x) {
+	while (cin >> x) { // đọc file và thêm điểm hiện tại vào vị trí
 		if (!check && x < score) {
 			check = true;
 			scores.push_back(score);
@@ -528,7 +531,7 @@ vector<Score*> ReadScore(string filename, int score, Vector2D p, float h) {
 
 	ofstream cout(filename);
 	for (int i = 0; i < scores.size(); i++) {
-		if (i < 5) {
+		if (i < 5) { // hiển thị 5 điểm top đầu
 			Score* t = new Score(gRenderer, p + Vector2D(0, i * h), Vector2D(0.8, 0.8));
 			t->SetValue(scores[i]);
 			results.push_back(t);
@@ -539,6 +542,7 @@ vector<Score*> ReadScore(string filename, int score, Vector2D p, float h) {
 	return results;
 }
 void SettingMenu() {
+	// Khởi tạo
 	Texture2D BG(gRenderer, SettingProject::getPath(TYPE_IMG::BG));
 	BG.SetScale(Vector2D(SCREEN_WIDTH / BG.transform.size.x, SCREEN_HEIGHT / BG.transform.size.y));
 	BG.transform.position = Vector2D(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
@@ -669,7 +673,6 @@ void PlayGame() {
 	showScore.SetValue(score);
 
 	BlockManager t(gRenderer, Vector2D(15, 10));
-	t.InitBlock();
 	Blocks* t2 = new Blocks(gRenderer, SettingProject::nextBlockType, Vector2D(5, -3), Vector2D(1, 1), 1);// 110, 295
 	t.InitBlock();
 	SDL_Event e;
@@ -707,13 +710,13 @@ void PlayGame() {
 				if (field[i][j] != NULL)
 					field[i][j]->Update(e, deltaTime);
 
-		if (!t2->isActive) {
+		if (!t2->isActive) { // khi va chạm khối => tạo khối ms
 			score += score_type[t2->_typeBlock];
 			showScore.SetValue(score);
 			t2->SpawnBlock();
 			t.InitBlock();
 			t2->isActive = true;
-			if (CheckGameOver()) {
+			if (CheckGameOver()) { // kiểm tra end game => caajo nhật trạng thái
 				PlayAudio(ID_AUDIO::AUDIO_GAME_OVER);
 				SettingProject::endGame = 1;
 				showScore.position = Vector2D(400 - 10 * showScore.imgs.size(), 110);
@@ -730,7 +733,7 @@ void PlayGame() {
 		}
 
 		border.Update(e, deltaTime);
-		if (SettingProject::endGame == 1) {
+		if (SettingProject::endGame == 1) { // hiển thị màn hình end game
 			BGEnd.Update(e, 0);
 			showScore.Update(e, 0, false);
 			btnRepeat.Update(e, 0);
@@ -755,6 +758,6 @@ void PlayGame() {
 		
 		SDL_RenderPresent(gRenderer); // hiển thị ra màn hình
 		gOldTime = SDL_GetTicks(); // lấy thời gian hiện tại
-		SDL_Delay(20*(1 - score/10000.0));
+		SDL_Delay(30* Mathf::Clamp((1 - score/150.0), 0, 1)); // 
 	}
 }
